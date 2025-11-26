@@ -23,7 +23,7 @@ const Footer = () => {
         <div>
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC_PuEt5JVTl1hAcHd4XJruoZ2DUuMCbL4bQ&s"
-            alt="NIBM Logo"
+            alt="GIST Logo"
             className="h-12 mb-4"
           />
           <p className="text-sm">{siteMeta.contact.address}</p>
@@ -62,8 +62,8 @@ const Footer = () => {
         </div>
       </div>
       <div className="border-t border-gray-800 py-6 text-center text-sm text-gray-500">
-        <p>© NIBM 2025. All rights reserved. Designed and Developed by Talentspark Consulting.</p>
-        <a href="https://www.nibm.lk/privacy-policy" target="_blank" rel="noreferrer" className="text-white underline mt-2 inline-block">
+        <p>© GIST 2025. All rights reserved.</p>
+        <a href="" target="_blank" rel="noreferrer" className="text-white underline mt-2 inline-block">
           Privacy Policy
         </a>
         {userRole === "admin" && (

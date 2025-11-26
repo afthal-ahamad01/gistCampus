@@ -4,18 +4,18 @@
 // documents are available inside the respective collections.
 export const seedData = {
   siteMeta: {
-    organizationName: "GIST Campus | Inspired by NIBM",
+    organizationName: "GIST Campus",
     tagline: "Powering Great Minds Across Sri Lanka",
     contact: {
-      address: "No: 120/5, Wijerama (Vidya) Mawatha, Colombo 07, Sri Lanka.",
-      hotline: "+94 117 321 000",
-      email: "programes@gistcampus.lk",
+      address: "No: 22, Hill Street, Colombo",
+      hotline: "+94 123 4567",
+      email: "programmes@gistcampus.com",
     },
     social: [
-      { label: "Facebook", href: "https://www.facebook.com/nibm.lk" },
-      { label: "Instagram", href: "https://www.instagram.com/nibm_srilanka/" },
-      { label: "LinkedIn", href: "https://www.linkedin.com/school/nibm-sri-lanka/" },
-      { label: "YouTube", href: "https://www.youtube.com/@nibm" },
+      { label: "Facebook", href: "" },
+      { label: "Instagram", href: "" },
+      { label: "LinkedIn", href: "" },
+      { label: "YouTube", href: "" },
     ],
   },
   heroSlides: [
