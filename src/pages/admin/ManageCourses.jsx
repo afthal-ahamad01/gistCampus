@@ -8,6 +8,8 @@ const ManageCourses = () => {
     const [editingCourse, setEditingCourse] = useState(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
+    console.log("Rendering ManageCourses");
+
     const handleSave = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -71,31 +73,91 @@ const ManageCourses = () => {
             {!isFormOpen ? (
                 <div className="bg-white shadow overflow-hidden sm:rounded-md">
                     <ul className="divide-y divide-gray-200">
-                        {content.courses.map((course) => (
-                            <li key={course.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
-                                <div>
-                                    <h3 className="text-lg font-medium text-gray-900">{course.title}</h3>
-                                    <p className="text-sm text-gray-500">{course.facultyId} | {course.duration}</p>
+                        {/* Group courses by Programme */}
+                        {content.programmes?.map((programme) => {
+                            const programCourses = content.courses.filter(c => c.programTypeId === programme.id);
+                            if (programCourses.length === 0) return null;
+
+                            return (
+                                <div key={programme.id} className="border-b border-gray-200 last:border-b-0">
+                                    <h3 className="bg-gray-50 px-6 py-3 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                        {programme.name}
+                                    </h3>
+                                    <ul className="divide-y divide-gray-200">
+                                        {programCourses.map((course) => (
+                                            <li key={course.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                                                <div>
+                                                    <h4 className="text-lg font-medium text-gray-900">{course.title}</h4>
+                                                    <p className="text-sm text-gray-500">
+                                                        {course.duration} | {course.level || "No Level"}
+                                                    </p>
+                                                </div>
+                                                <div className="flex space-x-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingCourse(course);
+                                                            setIsFormOpen(true);
+                                                        }}
+                                                        className="text-indigo-600 hover:text-indigo-900"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(course.id)}
+                                                        className="text-red-600 hover:text-red-900"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                                <div className="flex space-x-3">
-                                    <button
-                                        onClick={() => {
-                                            setEditingCourse(course);
-                                            setIsFormOpen(true);
-                                        }}
-                                        className="text-indigo-600 hover:text-indigo-900"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(course.id)}
-                                        className="text-red-600 hover:text-red-900"
-                                    >
-                                        Delete
-                                    </button>
+                            );
+                        })}
+
+                        {/* Uncategorized Courses */}
+                        {(() => {
+                            const uncategorizedCourses = content.courses.filter(c => !content.programmes?.some(p => p.id === c.programTypeId));
+                            if (uncategorizedCourses.length === 0) return null;
+
+                            return (
+                                <div className="border-b border-gray-200 last:border-b-0">
+                                    <h3 className="bg-gray-100 px-6 py-3 text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                        Uncategorized / Archived
+                                    </h3>
+                                    <ul className="divide-y divide-gray-200">
+                                        {uncategorizedCourses.map((course) => (
+                                            <li key={course.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                                                <div>
+                                                    <h4 className="text-lg font-medium text-gray-900">{course.title}</h4>
+                                                    <p className="text-sm text-gray-500">
+                                                        {course.duration}
+                                                    </p>
+                                                </div>
+                                                <div className="flex space-x-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingCourse(course);
+                                                            setIsFormOpen(true);
+                                                        }}
+                                                        className="text-indigo-600 hover:text-indigo-900"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(course.id)}
+                                                        className="text-red-600 hover:text-red-900"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                            </li>
-                        ))}
+                            );
+                        })()}
                     </ul>
                 </div>
             ) : (
@@ -116,20 +178,6 @@ const ManageCourses = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Faculty</label>
-                                <select
-                                    name="facultyId"
-                                    defaultValue={editingCourse?.facultyId}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
-                                    required
-                                >
-                                    <option value="">Select Faculty</option>
-                                    {content.faculties.map(f => (
-                                        <option key={f.id} value={f.id}>{f.title}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
                                 <label className="block text-sm font-medium text-gray-700">Program Type</label>
                                 <select
                                     name="programTypeId"
@@ -143,6 +191,22 @@ const ManageCourses = () => {
                                     ))}
                                 </select>
                             </div>
+                            {/* Faculty selection removed as per client request to replace Faculties with Programmes */}
+                            {/* 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Faculty (Optional)</label>
+                                <select
+                                    name="facultyId"
+                                    defaultValue={editingCourse?.facultyId}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                >
+                                    <option value="">Select Faculty</option>
+                                    {content.faculties.map(f => (
+                                        <option key={f.id} value={f.id}>{f.title}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Duration</label>
                                 <input
@@ -191,6 +255,16 @@ const ManageCourses = () => {
                                 defaultValue={editingCourse?.description}
                                 rows={3}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Course Pathway (Optional)</label>
+                            <textarea
+                                name="pathway"
+                                defaultValue={editingCourse?.pathway}
+                                rows={3}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                placeholder="Describe the career or academic pathway for this course..."
                             />
                         </div>
 

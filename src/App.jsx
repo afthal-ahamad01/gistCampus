@@ -25,6 +25,7 @@ import CourseDetails from "./pages/public/CourseDetails";
 import EnrollPage from "./pages/public/EnrollPage";
 import NewsEventsPage from "./pages/public/NewsEventsPage";
 import NewsEventDetail from "./pages/public/NewsEventDetail";
+import ProgrammeDetail from "./pages/public/ProgrammeDetail";
 import { ContentProvider } from "./context/ContentContext";
 import { AuthProvider } from "./context/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -41,6 +42,7 @@ const App = () => {
             {/* Public Routes */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<Home />} />
+              <Route path="programmes/:id" element={<ProgrammeDetail />} />
               <Route path="faculties/:facultyId" element={<FacultyPage />} />
               <Route path="courses/:courseSlug" element={<CourseDetails />} />
               <Route path="enroll" element={<EnrollPage />} />

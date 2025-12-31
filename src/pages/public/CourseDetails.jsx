@@ -79,6 +79,15 @@ const CourseDetails = () => {
                                 </p>
                             </section>
 
+                            {course.pathway && (
+                                <section>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Course Pathway</h2>
+                                    <p className="text-gray-600 leading-relaxed text-lg whitespace-pre-line">
+                                        {course.pathway}
+                                    </p>
+                                </section>
+                            )}
+
                             {course.modules && course.modules.length > 0 && (
                                 <section>
                                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Course Structure & Modules</h2>

@@ -12,15 +12,16 @@ const Programmes = () => {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {content.programmes && content.programmes.map((prog) => (
-                    <div
+                    <Link
                         key={prog.id}
-                        className="group relative bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all duration-500 overflow-hidden cursor-default"
+                        to={`/programmes/${prog.id}`}
+                        className="group relative bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all duration-500 overflow-hidden cursor-pointer flex items-center justify-center min-h-[120px]"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-primary to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <h3 className="relative z-10 font-semibold text-gray-800 group-hover:text-white transition-colors duration-300">
                             {prog.name}
                         </h3>
-                    </div>
+                    </Link>
                 ))}
             </div>
 

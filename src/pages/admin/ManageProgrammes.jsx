@@ -103,6 +103,17 @@ const ManageProgrammes = () => {
                             <p className="text-xs text-gray-500 mt-1">This will appear on the homepage programmes section</p>
                         </div>
 
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Description (Optional)</label>
+                            <textarea
+                                name="description"
+                                defaultValue={editingProgramme?.description}
+                                rows={3}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                placeholder="Brief description of the programme..."
+                            />
+                        </div>
+
                         <div className="flex justify-end space-x-3">
                             <button
                                 type="button"

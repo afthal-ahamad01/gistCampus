@@ -9,6 +9,8 @@ import { submitEnrollment } from "../services/publicActions";
 const Enroll = ({ initialCourse }) => {
   const { content } = useContent();
   const [submissionState, setSubmissionState] = useState({ status: "idle", message: "" });
+  const [selectedProgramId, setSelectedProgramId] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -17,11 +19,21 @@ const Enroll = ({ initialCourse }) => {
   } = useForm({
     defaultValues: {
       title: "",
-      programmes: "",
+      programmes: "", // This will store the program ID
       courseId: initialCourse || "",
       participantFluentIn: [],
     },
   });
+
+  // Watch for program changes to filter courses
+  const handleProgramChange = (e) => {
+    setSelectedProgramId(e.target.value);
+  };
+
+  // Filter courses based on selected program
+  const filteredCourses = selectedProgramId
+    ? content.courses.filter(course => course.programTypeId === selectedProgramId)
+    : content.courses;
 
   const onSubmit = async (values) => {
     try {
@@ -33,6 +45,7 @@ const Enroll = ({ initialCourse }) => {
           "Thank you for applying! Your submission was successful. Our administration team will reach out to you soon. Kindly verify that your contact information is correct.",
       });
       reset();
+      setSelectedProgramId(""); // Reset filter
     } catch (error) {
       console.error(error);
       setSubmissionState({
@@ -86,29 +99,38 @@ const Enroll = ({ initialCourse }) => {
                 placeholder="Enter NIC Number"
               />
             </Field>
+
             <Field label="Programmes" required error={errors.programmes?.message}>
               <select
-                {...register("programmes", { required: "Please select a programme category" })}
+                {...register("programmes", {
+                  required: "Please select a programme category",
+                  onChange: handleProgramChange
+                })}
                 className="form-input"
               >
                 <option value="">Select programme</option>
-                {content.programmes.map((programme) => (
-                  <option key={programme.id} value={programme.label}>
-                    {programme.label}
+                {content.programmes?.map((programme) => (
+                  <option key={programme.id} value={programme.id}>
+                    {programme.name}
                   </option>
                 ))}
               </select>
             </Field>
+
             <Field label="Select Course" required error={errors.courseId?.message}>
               <select {...register("courseId", { required: "Please select a course" })} className="form-input">
                 <option value="">Select course</option>
-                {content.courses.map((course) => (
+                {filteredCourses.map((course) => (
                   <option key={course.id} value={course.title}>
                     {course.title}
                   </option>
                 ))}
               </select>
+              {filteredCourses.length === 0 && selectedProgramId && (
+                <p className="text-xs text-red-500 mt-1">No courses found for this programme.</p>
+              )}
             </Field>
+
             <Field label="Date of Birth" required error={errors.dateOfBirth?.message}>
               <input
                 type="date"
@@ -272,4 +294,3 @@ const Section = ({ title, children }) => (
 );
 
 export default Enroll;
-

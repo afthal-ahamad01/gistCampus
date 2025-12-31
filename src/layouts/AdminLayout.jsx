@@ -20,7 +20,6 @@ const AdminLayout = () => {
     const navItems = [
         { label: "Dashboard", path: "/admin" },
         { label: "Manage Content", path: "/admin/content" },
-        { label: "Manage Faculties", path: "/admin/faculties" },
         { label: "Manage Programmes", path: "/admin/programmes" },
         { label: "Manage Courses", path: "/admin/courses" },
         { label: "Students", path: "/admin/students" },
@@ -61,8 +60,8 @@ const AdminLayout = () => {
                             to={item.path}
                             onClick={() => setIsMobileMenuOpen(false)}
                             className={`block px-3 md:px-4 py-2 md:py-3 rounded-lg transition-colors text-sm md:text-base ${location.pathname === item.path
-                                    ? "bg-primary text-white"
-                                    : "text-gray-600 hover:bg-gray-50"
+                                ? "bg-primary text-white"
+                                : "text-gray-600 hover:bg-gray-50"
                                 }`}
                         >
                             {item.label}

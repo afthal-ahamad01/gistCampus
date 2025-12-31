@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
+import Logo from '../data/Assets/Logo.png';
 
 // Floating header replicates nibm.lk, adds CTA buttons, and anchors to
 // in-page sections. The logo always routes home.
@@ -13,7 +14,6 @@ const Header = () => {
 
   const navLinks = [
     { label: "About", href: "/#about" },
-    { label: "Faculties", href: "/#faculties" },
     { label: "Programmes", href: "/#programmes" },
     { label: "My Results", href: "/results" },
     { label: "News & Events", href: "/#news" },
@@ -61,7 +61,7 @@ const Header = () => {
             className="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
           >
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC_PuEt5JVTl1hAcHd4XJruoZ2DUuMCbL4bQ&s"
+              src={Logo}
               alt="GIST Logo"
               className="h-12 w-auto"
             />

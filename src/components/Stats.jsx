@@ -9,10 +9,10 @@ const Stats = () => {
 
   const statList = [
     { label: "Years of excellence", value: `${stats.years}` },
-    { label: "Foreign Partnerships", value: `${stats.foreignPartnerships}` },
-    { label: "Professional Partnerships", value: `${stats.professionalPartnerships}` },
+    // { label: "Foreign Partnerships", value: `${stats.foreignPartnerships}` },
+    // { label: "Professional Partnerships", value: `${stats.professionalPartnerships}` },
     { label: "Campuses", value: `${stats.campuses}` },
-    { label: "Qualified Lecturers", value: `${stats.lecturers}` },
+    { label: "Qualified Lecturers", value: `${stats.lecturers.toLocaleString()}+` },
     { label: "Student Population", value: `${stats.students.toLocaleString()}+` },
   ];
 
@@ -21,7 +21,7 @@ const Stats = () => {
       <div className="max-w-6xl mx-auto px-4 text-center space-y-10">
         <div>
           <p className="text-sm uppercase tracking-[0.5em] text-white/70">GIST is the Leading Higher Education Institute</p>
-          <h2 className="text-3xl md:text-4xl font-bold mt-3">Experience 57 years of excellence</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mt-3">Experience 15 years of excellence</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {statList.map((stat) => (

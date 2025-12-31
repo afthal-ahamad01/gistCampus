@@ -18,7 +18,7 @@ const Home = () => {
   return (
     <div className="space-y-20 pb-20">
       <Hero />
-      <Faculties />
+      {/* <Faculties /> */}
       {/* <Courses /> */}
       <Stats />
       <Programmes />

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useContent } from "../context/ContentContext";
 import { useAuth } from "../context/AuthProvider";
+import Logo from '../data/Assets/Logo.png';
 
 // Footer replicates nibm.lk structure with mandated quick links.
 const Footer = () => {
@@ -22,7 +23,7 @@ const Footer = () => {
       <div className="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
         <div>
           <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC_PuEt5JVTl1hAcHd4XJruoZ2DUuMCbL4bQ&s"
+            src={Logo}
             alt="GIST Logo"
             className="h-12 mb-4"
           />
@@ -41,13 +42,16 @@ const Footer = () => {
           </nav>
         </div>
         <div>
-          <h4 className="text-lg font-semibold mb-4 text-white">Faculties</h4>
+          <h4 className="text-lg font-semibold mb-4 text-white">Programmes</h4>
           <nav className="space-y-2">
-            {content.faculties && content.faculties.map(faculty => (
-              <Link key={faculty.id} to={`/faculties/${faculty.id}`} className="block hover:text-white text-sm">
-                {faculty.title}
+            {content.programmes && content.programmes.slice(0, 5).map(prog => (
+              <Link key={prog.id} to={`/programmes/${prog.id}`} className="block hover:text-white text-sm">
+                {prog.name}
               </Link>
             ))}
+            <Link to="/#programmes" className="block text-primary hover:text-white text-sm mt-2">
+              View All
+            </Link>
           </nav>
         </div>
         <div>
@@ -77,4 +81,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
