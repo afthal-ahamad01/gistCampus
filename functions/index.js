@@ -1,33 +1,26 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const nodemailer = require("nodemailer");
 
 admin.initializeApp();
 
-// ==================================================================
-// EMAIL CONFIGURATION
-// ==================================================================
-// TODO: You MUST replace these values with your actual credentials.
-// For Gmail, you need to generate an "App Password":
-// https://myaccount.google.com/apppasswords
 const EMAIL_CONFIG = {
   service: "gmail",
   auth: {
-    user: "afthal6958@gmail.com",
-    pass: "eyni qvsy jwsk svvj"
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
   }
 };
 
-const transporter = nodemailer.createTransport(EMAIL_CONFIG);
+// Lazy initialization to prevent deployment timeouts
+let transporter = null;
+const getTransporter = () => {
+  if (!transporter) {
+    const nodemailer = require("nodemailer");
+    transporter = nodemailer.createTransport(EMAIL_CONFIG);
+  }
+  return transporter;
+};
 
-// ==================================================================
-// CLOUD FUNCTIONS
-// ==================================================================
-
-/**
- * Trigger: When a new document is created in 'enrollments' collection.
- * Action: Sends an email notification to the campus admin.
- */
 exports.sendEnrollmentEmail = functions.firestore
   .document("enrollments/{enrollmentId}")
   .onCreate(async (snap, context) => {
@@ -37,8 +30,8 @@ exports.sendEnrollmentEmail = functions.firestore
     console.log(`New enrollment detected: ${enrollmentId}`);
 
     const mailOptions = {
-      from: `"NIBM Portal" <${EMAIL_CONFIG.auth.user}>`,
-      to: "afthal6958@gmail.com", // Sending to personal email as requested
+      from: `"GIST Campus" <${EMAIL_CONFIG.auth.user}>`,
+      to: "afthalahamad01@gmail.com",
       subject: "New Enrollment",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -56,15 +49,57 @@ exports.sendEnrollmentEmail = functions.firestore
             </tr>
             <tr style="background-color: #f8f9fa;">
               <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Mobile</strong></td>
-              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.mobile || "N/A"}</td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.phoneNumber || "N/A"}</td>
             </tr>
             <tr>
               <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Course</strong></td>
-              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.courseName || "N/A"}</td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.courseId || "N/A"}</td>
             </tr>
             <tr style="background-color: #f8f9fa;">
               <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>NIC</strong></td>
               <td style="padding: 10px; border: 1px solid #dee2e6;">${data.nic || "N/A"}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Date of Birth</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.dateOfBirth || "N/A"}</td>
+            </tr>
+            <tr style="background-color: #f8f9fa;">
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Address</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">
+                ${data.homeAddressLine1 || ""} ${data.homeAddressLine2 || ""}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Designation</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.designation || "N/A"}</td>
+            </tr>
+            <tr style="background-color: #f8f9fa;">
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Organization</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.organization || "N/A"}</td>
+            </tr>
+             <tr>
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Fluent In</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">
+                ${Array.isArray(data.participantFluentIn) ? data.participantFluentIn.join(", ") : "N/A"}
+              </td>
+            </tr>
+            <tr style="background-color: #f8f9fa;">
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Currently Working</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">${data.currentlyWorking || "N/A"}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Office Details</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">
+                ${data.officeAddressLine1 || ""} ${data.officeAddressLine2 || ""} <br>
+                ${data.officePhone ? "Phone: " + data.officePhone : ""}
+              </td>
+            </tr>
+            <tr style="background-color: #f8f9fa;">
+              <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Qualifications</strong></td>
+              <td style="padding: 10px; border: 1px solid #dee2e6;">
+                <strong>Academic:</strong> ${data.academicQualifications || "N/A"}<br>
+                <strong>Professional:</strong> ${data.professionalQualifications || "N/A"}
+              </td>
             </tr>
           </table>
 
@@ -77,7 +112,8 @@ exports.sendEnrollmentEmail = functions.firestore
     };
 
     try {
-      await transporter.sendMail(mailOptions);
+      // Use the lazy transporter
+      await getTransporter().sendMail(mailOptions);
       console.log("Enrollment email sent successfully.");
     } catch (error) {
       console.error("Error sending enrollment email:", error);
