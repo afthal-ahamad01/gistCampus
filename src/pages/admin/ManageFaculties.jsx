@@ -2,16 +2,48 @@ import { useState } from "react";
 import { useContent } from "../../context/ContentContext";
 import { db } from "../../config/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import ImageUpload from "../../components/admin/ImageUpload";
+import CustomAlert from "../../components/CustomAlert";
 
 const ManageFaculties = () => {
     const { content } = useContent();
     const [editingFaculty, setEditingFaculty] = useState(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [uploadedHeroImage, setUploadedHeroImage] = useState("");
+
+    const [alertConfig, setAlertConfig] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "success",
+        onConfirm: null
+    });
+
+    const showAlert = (title, message, type = "success", onConfirm = null) => {
+        setAlertConfig({ isOpen: true, title, message, type, onConfirm });
+    };
+
+    const closeAlert = () => {
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const handleEdit = (faculty) => {
+        setEditingFaculty(faculty);
+        setUploadedHeroImage(faculty?.heroImage || "");
+        setIsFormOpen(true);
+    };
 
     const handleSave = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
+
+        data.heroImage = uploadedHeroImage;
+
+        // Generate slug logic (same as before)
+        if (!data.slug) {
+            data.slug = data.title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+        }
 
         try {
             if (editingFaculty) {
@@ -21,34 +53,46 @@ const ManageFaculties = () => {
             }
             setIsFormOpen(false);
             setEditingFaculty(null);
-            alert("Faculty saved successfully!");
+            showAlert("Success!", "Faculty saved successfully.", "success");
         } catch (error) {
             console.error("Error saving faculty:", error);
-            alert("Failed to save faculty.");
+            showAlert("Error", "Failed to save faculty.", "error");
+        }
+    };
+
+    const confirmDelete = async (id) => {
+        try {
+            await deleteDoc(doc(db, "faculties", id));
+            showAlert("Deleted!", "Faculty deleted successfully.", "success");
+        } catch (error) {
+            console.error("Error deleting faculty:", error);
+            showAlert("Error", "Failed to delete faculty.", "error");
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this faculty?")) {
-            try {
-                await deleteDoc(doc(db, "faculties", id));
-                alert("Faculty deleted successfully!");
-            } catch (error) {
-                console.error("Error deleting faculty:", error);
-                alert("Failed to delete faculty.");
-            }
-        }
+        showAlert(
+            "Are you sure?",
+            "Do you really want to delete this faculty?",
+            "confirm",
+            () => confirmDelete(id)
+        );
     };
 
     return (
         <div className="space-y-6">
+            <CustomAlert
+                isOpen={alertConfig.isOpen}
+                onClose={closeAlert}
+                onConfirm={alertConfig.onConfirm}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-900">Manage Faculties</h1>
                 <button
-                    onClick={() => {
-                        setEditingFaculty(null);
-                        setIsFormOpen(true);
-                    }}
+                    onClick={() => handleEdit(null)}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
                 >
                     Add New Faculty
@@ -66,10 +110,7 @@ const ManageFaculties = () => {
                                 </div>
                                 <div className="flex space-x-3">
                                     <button
-                                        onClick={() => {
-                                            setEditingFaculty(faculty);
-                                            setIsFormOpen(true);
-                                        }}
+                                        onClick={() => handleEdit(faculty)}
                                         className="text-indigo-600 hover:text-indigo-900"
                                     >
                                         Edit
@@ -124,17 +165,12 @@ const ManageFaculties = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Hero Image URL</label>
-                            <input
-                                type="text"
-                                name="heroImage"
-                                defaultValue={editingFaculty?.heroImage}
-                                placeholder="https://..."
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
-                                required
-                            />
-                        </div>
+                        <ImageUpload
+                            label="Hero Image"
+                            folder="faculty_heroes"
+                            initialValue={editingFaculty?.heroImage}
+                            onUpload={(url) => setUploadedHeroImage(url)}
+                        />
 
                         <div className="flex justify-end space-x-3">
                             <button

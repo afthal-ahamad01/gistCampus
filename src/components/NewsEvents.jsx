@@ -16,9 +16,9 @@ const NewsEvents = () => {
         <div className="grid gap-6 md:grid-cols-3">
           {content.newsEvents.map((item) => (
             <Link to={`/news-events/${item.id}`} key={item.id} className="relative bg-white rounded-3xl shadow overflow-hidden flex flex-col h-80 group cursor-pointer">
-              {item.image && (
+              {(item.coverImage || item.image) && (
                 <div className="absolute inset-0">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <img src={item.coverImage || item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                 </div>
               )}

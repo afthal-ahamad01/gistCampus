@@ -4,6 +4,7 @@ import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc, serverTimestamp
 import { useAuth } from "../../context/AuthProvider";
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import ImageUpload from "../../components/admin/ImageUpload";
 
 const ManageLecturers = () => {
     const { currentUser } = useAuth();
@@ -11,6 +12,7 @@ const ManageLecturers = () => {
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingLecturer, setEditingLecturer] = useState(null);
+    const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState("");
 
     useEffect(() => {
         fetchLecturers();
@@ -28,19 +30,22 @@ const ManageLecturers = () => {
         }
     };
 
+    const handleEdit = (lecturer) => {
+        setEditingLecturer(lecturer);
+        setUploadedPhotoUrl(lecturer?.photoUrl || "");
+        setIsFormOpen(true);
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
 
-        // Boolean conversions
+        data.photoUrl = uploadedPhotoUrl;
         data.isActive = data.isActive === "on";
 
-        // Metadata updates
         const timestamp = serverTimestamp();
         data.lastUpdated = timestamp;
-
-        let newUserId = null;
 
         try {
             if (!editingLecturer) {
@@ -48,63 +53,60 @@ const ManageLecturers = () => {
                 data.createdDate = timestamp;
                 data.createdBy = currentUser?.email || "admin";
                 data.role = "lecturer";
+                // Metadata
+                data.createdDate = new Date(); // Client side date for immediate UI usage if needed, but serverTimestamp is better for DB
+                data.createdBy = "admin";
+            }
 
-                // 1. Create Authentication User (Secondary App Workaround)
-                if (data.tempPassword) {
-                    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-                    const secondaryAuth = getAuth(secondaryApp);
-                    try {
-                        const userCredential = await createUserWithEmailAndPassword(secondaryAuth, data.email, data.tempPassword);
-                        newUserId = userCredential.user.uid;
-                        await deleteApp(secondaryApp); // Cleanup
-                    } catch (authError) {
-                        await deleteApp(secondaryApp); // Cleanup on error too
-                        console.error("Auth Error:", authError);
-                        alert(`Failed to create login account: ${authError.message}`);
-                        return; // Stop if auth fails
-                    }
-                } else {
-                    alert("Temporary Password is required for new lecturers.");
-                    return;
-                }
+            if (data.experience) data.experience = Number(data.experience);
+            // data.dateOfJoining is kept as string
 
-                // 2. Create Firestore Document with same UID
-                if (newUserId) {
-                    await apiSetDoc(doc(db, "lecturers", newUserId), data);
-                } else {
-                    // Fallback
-                    await addDoc(collection(db, "lecturers"), data);
-                }
-
-            } else {
-                // UPDATE EXISTING LECTURER
-                delete data.tempPassword; // Don't save password to DB
+            if (editingLecturer) {
                 await updateDoc(doc(db, "lecturers", editingLecturer.id), data);
+            } else {
+                await addDoc(collection(db, "lecturers"), data);
             }
 
             setIsFormOpen(false);
             setEditingLecturer(null);
+            showAlert("Success!", "Lecturer profile saved successfully.", "success");
             fetchLecturers();
-            alert("Lecturer saved successfully!");
         } catch (error) {
             console.error("Error saving lecturer:", error);
-            alert("Failed to save lecturer.");
+            showAlert("Error", "Failed to save lecturer profile.", "error");
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this lecturer?")) {
-            try {
-                await deleteDoc(doc(db, "lecturers", id));
-                fetchLecturers();
-            } catch (error) {
-                console.error("Error deleting lecturer:", error);
-            }
+    const confirmDelete = async (id) => {
+        try {
+            await deleteDoc(doc(db, "lecturers", id));
+            showAlert("Deleted!", "Lecturer deleted successfully.", "success");
+            fetchLecturers();
+        } catch (error) {
+            console.error("Error deleting lecturer:", error);
+            showAlert("Error", "Failed to delete lecturer.", "error");
         }
+    };
+
+    const handleDelete = (id) => {
+        showAlert(
+            "Are you sure?",
+            "Do you really want to delete this lecturer profile?",
+            "confirm",
+            () => confirmDelete(id)
+        );
     };
 
     return (
         <div className="space-y-6">
+            <CustomAlert
+                isOpen={alertConfig.isOpen}
+                onClose={closeAlert}
+                onConfirm={alertConfig.onConfirm}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-900">Lecturer Management</h1>
                 <button
@@ -169,10 +171,7 @@ const ManageLecturers = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <button
-                                                    onClick={() => {
-                                                        setEditingLecturer(lecturer);
-                                                        setIsFormOpen(true);
-                                                    }}
+                                                    onClick={() => handleEdit(lecturer)}
                                                     className="text-indigo-600 hover:text-indigo-900 mr-4"
                                                 >
                                                     Edit
@@ -212,7 +211,15 @@ const ManageLecturers = () => {
                             <Input label="Lecturer ID" name="lecturerId" defaultValue={editingLecturer?.lecturerId} required placeholder="e.g., LEC001" />
                             <Select label="Gender" name="gender" defaultValue={editingLecturer?.gender} options={["Male", "Female", "Other"]} />
                             <Input label="Date of Birth" name="dob" type="date" defaultValue={editingLecturer?.dob} />
-                            <Input label="Profile Photo URL" name="photoUrl" defaultValue={editingLecturer?.photoUrl} placeholder="https://..." />
+
+                            <div className="col-span-2">
+                                <ImageUpload
+                                    label="Profile Photo"
+                                    folder="lecturer_profiles"
+                                    initialValue={editingLecturer?.photoUrl}
+                                    onUpload={(url) => setUploadedPhotoUrl(url)}
+                                />
+                            </div>
                         </Section>
 
                         {/* Contact Info */}

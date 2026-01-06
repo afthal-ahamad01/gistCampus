@@ -3,10 +3,33 @@ import { useContent } from "../../context/ContentContext";
 import { db } from "../../config/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 
+import ImageUpload from "../../components/admin/ImageUpload";
+import CustomAlert from "../../components/CustomAlert";
+
 const ManageContent = () => {
     const { content } = useContent();
     const [activeTab, setActiveTab] = useState("newsEvents");
     const [editingItem, setEditingItem] = useState(null);
+    const [uploadedCoverImage, setUploadedCoverImage] = useState("");
+    const [uploadedImages, setUploadedImages] = useState([]);
+    const [uploadedImage, setUploadedImage] = useState("");
+
+    // Alert State
+    const [alertConfig, setAlertConfig] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "success",
+        onConfirm: null
+    });
+
+    const showAlert = (title, message, type = "success", onConfirm = null) => {
+        setAlertConfig({ isOpen: true, title, message, type, onConfirm });
+    };
+
+    const closeAlert = () => {
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    };
 
     const tabs = [
         { id: "newsEvents", label: "News & Events" },
@@ -18,6 +41,14 @@ const ManageContent = () => {
         { id: "stats", label: "Stats" },
     ];
 
+    // Reset upload states when opening modal or changing tabs
+    const handleEdit = (item) => {
+        setEditingItem(item);
+        setUploadedCoverImage(item?.coverImage || "");
+        setUploadedImages(Array.isArray(item?.images) ? item?.images : []);
+        setUploadedImage(item?.image || "");
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -25,67 +56,73 @@ const ManageContent = () => {
 
         try {
             if (activeTab === "stats") {
-                // Stats is a singleton, so we always update the same document
-                // We assume the ID is 'stats' or passed in the form
+                // Stats is a singleton
                 const docId = data.id || "stats";
-                // Remove id from data to avoid overwriting it in the doc content if not needed, 
-                // though setDoc/updateDoc handles it fine.
                 delete data.id;
 
-                // Convert string numbers back to numbers
                 const numericFields = ["years", "foreignPartnerships", "professionalPartnerships", "campuses", "lecturers", "students"];
                 numericFields.forEach(field => {
                     if (data[field]) data[field] = Number(data[field]);
                 });
 
-                // Handle News Images Array
-                if (activeTab === "newsEvents" && data.images) {
-                    if (typeof data.images === "string") {
-                        // Split by comma, trim whitespace, and filter out empty strings
-                        data.images = data.images.split(",").map(url => url.trim()).filter(url => url.length > 0);
-                    }
-                } else if (activeTab === "newsEvents" && !data.images) {
-                    // If images field is empty, ensure it's an empty array or null, not undefined
-                    data.images = [];
-                }
-
-                // Use setDoc with merge: true to ensure it exists or updates
                 const { setDoc } = await import("firebase/firestore");
                 await setDoc(doc(db, activeTab, docId), data, { merge: true });
-            } else if (editingItem) {
-                await updateDoc(doc(db, activeTab, editingItem.id), data);
             } else {
-                await addDoc(collection(db, activeTab), data);
+                if (activeTab === "newsEvents") {
+                    data.coverImage = uploadedCoverImage;
+                    data.images = uploadedImages;
+                } else {
+                    data.image = uploadedImage;
+                }
+
+                if (editingItem && editingItem.id) {
+                    await updateDoc(doc(db, activeTab, editingItem.id), data);
+                } else {
+                    await addDoc(collection(db, activeTab), data);
+                }
             }
             setEditingItem(null);
-            // Ideally, we should trigger a refresh of the content context or it should listen to real-time updates
-            // For now, we rely on the context's initial load or manual refresh, but Firestore listeners would be better.
-            alert("Saved successfully!");
+            showAlert("Success!", "Content saved successfully.", "success");
         } catch (error) {
             console.error("Error saving document:", error);
-            alert("Failed to save.");
+            showAlert("Error", "Failed to save content.", "error");
+        }
+    };
+
+    const confirmDelete = async (id) => {
+        try {
+            await deleteDoc(doc(db, activeTab, id));
+            showAlert("Deleted!", "Item deleted successfully.", "success");
+        } catch (error) {
+            console.error("Error deleting document:", error);
+            showAlert("Error", "Failed to delete item.", "error");
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this item?")) {
-            try {
-                await deleteDoc(doc(db, activeTab, id));
-                alert("Deleted successfully!");
-            } catch (error) {
-                console.error("Error deleting document:", error);
-                alert("Failed to delete.");
-            }
-        }
+        showAlert(
+            "Are you sure?",
+            "Do you really want to delete this item?",
+            "confirm",
+            () => confirmDelete(id)
+        );
     };
 
     return (
         <div className="space-y-6">
+            <CustomAlert
+                isOpen={alertConfig.isOpen}
+                onClose={closeAlert}
+                onConfirm={alertConfig.onConfirm}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-900">Manage Content</h1>
                 {activeTab !== "stats" && (
                     <button
-                        onClick={() => setEditingItem({})}
+                        onClick={() => handleEdit({})}
                         className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
                     >
                         Add New
@@ -205,7 +242,7 @@ const ManageContent = () => {
                                     </div>
                                     <div className="flex space-x-3">
                                         <button
-                                            onClick={() => setEditingItem(item)}
+                                            onClick={() => handleEdit(item)}
                                             className="text-indigo-600 hover:text-indigo-900"
                                         >
                                             Edit
@@ -259,26 +296,38 @@ const ManageContent = () => {
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
                                     />
                                 </div>
+                                <ImageUpload
+                                    label="Cover Image"
+                                    folder="news_covers"
+                                    initialValue={editingItem.coverImage}
+                                    onUpload={(url) => setUploadedCoverImage(url)}
+                                />
+                                {/* For simplicity for now, just main URL. Gallery can be complex */}
+                                {/* In a full app you might loop ImageUpload for gallery */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Cover Image URL</label>
-                                    <input
-                                        type="text"
-                                        name="coverImage"
-                                        defaultValue={editingItem.coverImage}
-                                        placeholder="https://..."
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Gallery Images (Comma separated URLs)</label>
-                                    <textarea
-                                        name="images"
-                                        defaultValue={Array.isArray(editingItem.images) ? editingItem.images.join(", ") : editingItem.images}
-                                        placeholder="https://image1.jpg, https://image2.jpg"
-                                        rows={2}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Enter multiple image URLs separated by commas for the slider.</p>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Gallery Images</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <ImageUpload
+                                            label="Image 1"
+                                            folder="news_gallery"
+                                            initialValue={editingItem.images?.[0]}
+                                            onUpload={(url) => {
+                                                const newImages = [...uploadedImages];
+                                                newImages[0] = url;
+                                                setUploadedImages(newImages);
+                                            }}
+                                        />
+                                        <ImageUpload
+                                            label="Image 2"
+                                            folder="news_gallery"
+                                            initialValue={editingItem.images?.[1]}
+                                            onUpload={(url) => {
+                                                const newImages = [...uploadedImages];
+                                                newImages[1] = url;
+                                                setUploadedImages(newImages);
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </>
                         )}
@@ -310,16 +359,14 @@ const ManageContent = () => {
                                     />
                                 </div>
 
-                                {/* Image URL field - in a real app this would be a file upload */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Image URL</label>
-                                    <input
-                                        type="text"
-                                        name="image"
-                                        defaultValue={editingItem.image}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                {activeTab !== "newsEvents" && (
+                                    <ImageUpload
+                                        label="Image"
+                                        folder={activeTab} // e.g., foreignAffiliations, testimonials
+                                        initialValue={editingItem.image}
+                                        onUpload={(url) => setUploadedImage(url)}
                                     />
-                                </div>
+                                )}
                             </>
                         )}
 
