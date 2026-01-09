@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthProvider";
 import { useContent } from "../../context/ContentContext";
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import ImageUpload from "../../components/admin/ImageUpload";
 
 const ManageStudents = () => {
     const { currentUser } = useAuth();
@@ -16,9 +17,11 @@ const ManageStudents = () => {
 
     // Course Enrollment State
     const [enrolledCourses, setEnrolledCourses] = useState([]);
-    const [selectedFaculty, setSelectedFaculty] = useState("");
     const [selectedProgramType, setSelectedProgramType] = useState("");
     const [selectedCourse, setSelectedCourse] = useState("");
+
+    // Photo Upload State
+    const [photoUrl, setPhotoUrl] = useState("");
 
     useEffect(() => {
         fetchStudents();
@@ -27,8 +30,10 @@ const ManageStudents = () => {
     useEffect(() => {
         if (editingStudent) {
             setEnrolledCourses(editingStudent.enrolledCourses || []);
+            setPhotoUrl(editingStudent.photoUrl || "");
         } else {
             setEnrolledCourses([]);
+            setPhotoUrl("");
         }
     }, [editingStudent]);
 
@@ -59,7 +64,6 @@ const ManageStudents = () => {
         const newEnrollment = {
             courseId: course.id,
             courseTitle: course.title,
-            facultyId: selectedFaculty,
             programTypeId: selectedProgramType,
             enrolledDate: new Date().toISOString(),
             status: "Enrolled" // Default status
@@ -87,6 +91,9 @@ const ManageStudents = () => {
 
         // Add enrolled courses
         data.enrolledCourses = enrolledCourses;
+
+        // Add Photo URL
+        data.photoUrl = photoUrl;
 
         let newUserId = null;
 
@@ -153,13 +160,8 @@ const ManageStudents = () => {
     };
 
     // Filtered lists for dropdowns
-    const filteredProgrammes = selectedFaculty
-        ? content.programmes // In a real app, we might filter programmes by faculty if there's a mapping
-        : content.programmes;
-
     const filteredCourses = content.courses.filter(course => {
         let match = true;
-        if (selectedFaculty) match = match && course.facultyId === selectedFaculty;
         if (selectedProgramType) match = match && course.programTypeId === selectedProgramType;
         return match;
     });
@@ -274,7 +276,15 @@ const ManageStudents = () => {
                             <Input label="Date of Birth" name="dob" type="date" defaultValue={editingStudent?.dob} />
                             <Select label="Gender" name="gender" defaultValue={editingStudent?.gender} options={["Male", "Female", "Other"]} />
                             <Input label="NIC" name="nic" defaultValue={editingStudent?.nic} />
-                            <Input label="Profile Photo URL" name="photoUrl" defaultValue={editingStudent?.photoUrl} placeholder="https://..." />
+
+                            <div className="col-span-1 md:col-span-2">
+                                <ImageUpload
+                                    label="Profile Photo"
+                                    initialValue={photoUrl}
+                                    onUpload={setPhotoUrl}
+                                    folder="student_photos"
+                                />
+                            </div>
                         </Section>
 
                         {/* Contact Info */}
@@ -287,8 +297,6 @@ const ManageStudents = () => {
 
                         {/* Academic Info */}
                         <Section title="Academic Information">
-                            <Input label="Programme" name="programme" defaultValue={editingStudent?.programme} />
-                            <Input label="Faculty" name="faculty" defaultValue={editingStudent?.faculty} />
                             <Input label="Batch" name="batch" defaultValue={editingStudent?.batch} />
                             <Input label="Enrollment Date" name="enrollmentDate" type="date" defaultValue={editingStudent?.enrollmentDate} />
                         </Section>
@@ -297,23 +305,7 @@ const ManageStudents = () => {
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                             <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Enrolled Courses</h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Faculty</label>
-                                    <select
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                                        value={selectedFaculty}
-                                        onChange={(e) => {
-                                            setSelectedFaculty(e.target.value);
-                                            setSelectedCourse(""); // Reset course when faculty changes
-                                        }}
-                                    >
-                                        <option value="">Select Faculty</option>
-                                        {content.faculties.map(f => (
-                                            <option key={f.id} value={f.id}>{f.title}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Programme Type</label>
                                     <select
@@ -326,7 +318,7 @@ const ManageStudents = () => {
                                     >
                                         <option value="">Select Type</option>
                                         {content.programmes.map(p => (
-                                            <option key={p.id} value={p.id}>{p.label}</option>
+                                            <option key={p.id} value={p.id}>{p.name || p.label}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -336,7 +328,7 @@ const ManageStudents = () => {
                                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                                         value={selectedCourse}
                                         onChange={(e) => setSelectedCourse(e.target.value)}
-                                        disabled={!selectedFaculty && !selectedProgramType}
+                                        disabled={!selectedProgramType}
                                     >
                                         <option value="">Select Course</option>
                                         {filteredCourses.map(c => (
@@ -360,23 +352,26 @@ const ManageStudents = () => {
                             {/* Enrolled Courses List */}
                             {enrolledCourses.length > 0 ? (
                                 <div className="space-y-2">
-                                    {enrolledCourses.map((enrollment, idx) => (
-                                        <div key={idx} className="flex justify-between items-center bg-white p-3 rounded border border-gray-200">
-                                            <div>
-                                                <p className="font-medium text-gray-900">{enrollment.courseTitle}</p>
-                                                <p className="text-xs text-gray-500">
-                                                    {content.faculties.find(f => f.id === enrollment.facultyId)?.title} • {content.programmes.find(p => p.id === enrollment.programTypeId)?.label}
-                                                </p>
+                                    {enrolledCourses.map((enrollment, idx) => {
+                                        const prog = content.programmes.find(p => p.id === enrollment.programTypeId);
+                                        return (
+                                            <div key={idx} className="flex justify-between items-center bg-white p-3 rounded border border-gray-200">
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{enrollment.courseTitle}</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {prog?.name || prog?.label || "Unknown Programme"}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveCourse(enrollment.courseId)}
+                                                    className="text-red-600 hover:text-red-800 text-sm"
+                                                >
+                                                    Remove
+                                                </button>
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveCourse(enrollment.courseId)}
-                                                className="text-red-600 hover:text-red-800 text-sm"
-                                            >
-                                                Remove
-                                            </button>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <p className="text-sm text-gray-500 text-center py-4">No courses enrolled yet.</p>

@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is an admin
+    function isAdmin() {
+      // CAUTION: Ensure you have an 'admins' collection with the user's document having role: "admin"
+      // If not, this check will fail.
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == "admin";
+    }
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // --- PUBLIC CONTENT (Read-only for public, Write for Admin) ---
+    match /heroSlides/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /faculties/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /programmes/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /courses/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /newsEvents/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /gallery/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /testimonials/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /foreignAffiliations/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /professionalAffiliations/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /campuses/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /stats/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /siteMeta/{docId} { allow read: if true; allow write: if isAdmin(); }
+
+    // --- PUBLIC FORMS (Write-only for public) ---
+    match /enrollments/{docId} { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /transcriptRequests/{docId} { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /notifications/{docId} { allow create: if true; allow read, update, delete: if isAdmin(); }
+
+    // --- USER MANAGEMENT ---
+    match /admins/{userId} {
+      allow read: if request.auth.uid == userId; 
+      allow write: if false; 
+    }
+    
+    match /students/{userId} {
+      allow read: if isAdmin() || request.auth.uid == userId;
+      allow write: if isAdmin();
+    }
+    
+    match /lecturers/{userId} {
+      allow read: if isAdmin() || request.auth.uid == userId;
+      allow write: if isAdmin();
+    }
+
+    // --- TRANSCRIPTS & CERTIFICATES ---
+    match /certificates/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /transcripts/{docId} { 
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.studentId == request.auth.token.email);
+      allow write: if isAdmin(); 
+    }
+
+    // --- NEW: COURSE CONTENTS (Added for Portal Features) ---
+    match /course_contents/{docId} {
+        // Students and Lecturers need access
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated(); // Refine to lecturers only in future
+    }
+  }
+}

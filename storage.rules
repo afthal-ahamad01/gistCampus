@@ -1,0 +1,51 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Default: Deny all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Public Assets
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Course Materials (Lecturers upload, Students read)
+    match /course_materials/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Student Photos
+    match /student_photos/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Lecturer Profiles
+    match /lecturer_profiles/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Course Hero Images
+    match /course_heroes/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Generic Uploads (Fallback)
+    match /uploads/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Admins (if using a specific folder)
+    match /admins/{allPaths=**} {
+        allow read, write: if request.auth != null; // Simplified for now
+    }
+  }
+}

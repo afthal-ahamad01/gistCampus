@@ -121,7 +121,7 @@ const ManageCourses = () => {
                             return (
                                 <div key={programme.id} className="border-b border-gray-200 last:border-b-0">
                                     <h3 className="bg-gray-50 px-6 py-3 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                        {programme.name}
+                                        {programme.name || programme.label}
                                     </h3>
                                     <ul className="divide-y divide-gray-200">
                                         {programCourses.map((course) => (
@@ -221,7 +221,7 @@ const ManageCourses = () => {
                                 >
                                     <option value="">Select Program Type</option>
                                     {content.programmes?.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                        <option key={p.id} value={p.id}>{p.name || p.label}</option>
                                     ))}
                                 </select>
                             </div>

@@ -20,7 +20,7 @@ const LecturerLayout = () => {
     const menuItems = [
         { path: "/lecturer/dashboard", label: "Dashboard", icon: "📊" },
         { path: "/lecturer/profile", label: "My Profile", icon: "👤" },
-        { path: "/lecturer/materials", label: "Course Materials", icon: "📚" },
+        // { path: "/lecturer/materials", label: "Course Materials", icon: "📚" }, // Removed per user request
         { path: "/lecturer/notices", label: "Manage Notices", icon: "📢" },
     ];
 
@@ -49,8 +49,8 @@ const LecturerLayout = () => {
                                     key={item.path}
                                     to={item.path}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                                            ? "bg-primary text-white shadow-lg shadow-primary/30"
-                                            : "text-gray-600 hover:bg-gray-50 hover:text-primary"
+                                        ? "bg-primary text-white shadow-lg shadow-primary/30"
+                                        : "text-gray-600 hover:bg-gray-50 hover:text-primary"
                                         }`}
                                 >
                                     <span className="text-xl">{item.icon}</span>

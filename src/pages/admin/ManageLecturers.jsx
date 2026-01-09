@@ -1,18 +1,40 @@
+
 import { useState, useEffect } from "react";
 import { db, firebaseConfig } from "../../config/firebase";
 import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, setDoc as apiSetDoc } from "firebase/firestore";
 import { useAuth } from "../../context/AuthProvider";
+import { useContent } from "../../context/ContentContext";
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import ImageUpload from "../../components/admin/ImageUpload";
+import CustomAlert from "../../components/CustomAlert";
 
 const ManageLecturers = () => {
     const { currentUser } = useAuth();
+    const { content } = useContent(); // Access public courses
     const [lecturers, setLecturers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingLecturer, setEditingLecturer] = useState(null);
     const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState("");
+    const [selectedCourses, setSelectedCourses] = useState([]);
+
+    // Alert State
+    const [alertConfig, setAlertConfig] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "success",
+        onConfirm: null
+    });
+
+    const showAlert = (title, message, type = "success", onConfirm = null) => {
+        setAlertConfig({ isOpen: true, title, message, type, onConfirm });
+    };
+
+    const closeAlert = () => {
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    };
 
     useEffect(() => {
         fetchLecturers();
@@ -33,7 +55,25 @@ const ManageLecturers = () => {
     const handleEdit = (lecturer) => {
         setEditingLecturer(lecturer);
         setUploadedPhotoUrl(lecturer?.photoUrl || "");
+
+        // Initialize selected courses
+        if (lecturer?.coursesAssigned && Array.isArray(lecturer.coursesAssigned)) {
+            setSelectedCourses(lecturer.coursesAssigned);
+        } else {
+            setSelectedCourses([]);
+        }
+
         setIsFormOpen(true);
+    };
+
+    const handleCourseToggle = (courseId) => {
+        setSelectedCourses(prev => {
+            if (prev.includes(courseId)) {
+                return prev.filter(id => id !== courseId);
+            } else {
+                return [...prev, courseId];
+            }
+        });
     };
 
     const handleSave = async (e) => {
@@ -43,6 +83,7 @@ const ManageLecturers = () => {
 
         data.photoUrl = uploadedPhotoUrl;
         data.isActive = data.isActive === "on";
+        data.coursesAssigned = selectedCourses; // Save array of IDs
 
         const timestamp = serverTimestamp();
         data.lastUpdated = timestamp;
@@ -50,12 +91,11 @@ const ManageLecturers = () => {
         try {
             if (!editingLecturer) {
                 // CREATE NEW LECTURER
-                data.createdDate = timestamp;
+                data.createdDate = timestamp; // Server timestamp
                 data.createdBy = currentUser?.email || "admin";
                 data.role = "lecturer";
-                // Metadata
-                data.createdDate = new Date(); // Client side date for immediate UI usage if needed, but serverTimestamp is better for DB
-                data.createdBy = "admin";
+                // Client-side fallback for immediate UI update
+                data.createdDate = new Date();
             }
 
             if (data.experience) data.experience = Number(data.experience);
@@ -112,6 +152,8 @@ const ManageLecturers = () => {
                 <button
                     onClick={() => {
                         setEditingLecturer(null);
+                        setUploadedPhotoUrl("");
+                        setSelectedCourses([]);
                         setIsFormOpen(true);
                     }}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
@@ -163,8 +205,8 @@ const ManageLecturers = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span
-                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${lecturer.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                                        }`}
+                                                    className={`px - 2 inline - flex text - xs leading - 5 font - semibold rounded - full ${lecturer.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                                        } `}
                                                 >
                                                     {lecturer.isActive ? "Active" : "Inactive"}
                                                 </span>
@@ -247,8 +289,27 @@ const ManageLecturers = () => {
                                 <input type="text" name="researchInterests" defaultValue={editingLecturer?.researchInterests} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700">Courses Assigned</label>
-                                <input type="text" name="coursesAssigned" defaultValue={editingLecturer?.coursesAssigned} placeholder="Comma separated modules" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Courses</label>
+                                <div className="border border-gray-300 rounded-md p-4 max-h-60 overflow-y-auto bg-gray-50">
+                                    {content.courses && content.courses.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                            {content.courses.map(course => (
+                                                <label key={course.id} className="flex items-center space-x-2 p-2 hover:bg-white rounded cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedCourses.includes(course.id)}
+                                                        onChange={() => handleCourseToggle(course.id)}
+                                                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                                                    />
+                                                    <span className="text-sm text-gray-700">{course.title}{course.courseCode ? ` (${course.courseCode})` : ""}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500">No courses available. Please add courses first.</p>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Select the courses this lecturer is responsible for teaching.</p>
                             </div>
                         </Section>
 
@@ -307,6 +368,8 @@ const ManageLecturers = () => {
                                 onClick={() => {
                                     setIsFormOpen(false);
                                     setEditingLecturer(null);
+                                    setUploadedPhotoUrl("");
+                                    setSelectedCourses([]);
                                 }}
                                 className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                             >
