@@ -56,10 +56,18 @@ export const ContentProvider = ({ children }) => {
               ...doc.data(),
             }));
 
-            // Stats & other singleton objects are stored as the first doc.
-            const value = docs.length === 1 && typeof docs[0] === "object" && !Array.isArray(seedData[key])
-              ? docs[0]
-              : docs;
+            // Stats & other singleton objects are stored as a single doc.
+            // If seedData key is an object (not array), treat as singleton.
+            const isSingleton = !Array.isArray(seedData[key]) && typeof seedData[key] === "object";
+
+            let value;
+            if (isSingleton && docs.length > 0) {
+              // Prefer doc with ID matching the key (e.g., id="siteMeta" in collection "siteMeta")
+              const matchingDoc = docs.find(d => d.id === key);
+              value = matchingDoc || docs[0];
+            } else {
+              value = docs;
+            }
             return [key, value];
           })
         );

@@ -39,6 +39,7 @@ const ManageContent = () => {
         { id: "foreignAffiliations", label: "Foreign Affiliations" },
         { id: "professionalAffiliations", label: "Professional Affiliations" },
         { id: "stats", label: "Stats" },
+        { id: "contactInfo", label: "Contact Info" },
     ];
 
     // Reset upload states when opening modal or changing tabs
@@ -67,6 +68,29 @@ const ManageContent = () => {
 
                 const { setDoc } = await import("firebase/firestore");
                 await setDoc(doc(db, activeTab, docId), data, { merge: true });
+            } else if (activeTab === "contactInfo") {
+                // ContactInfo is part of siteMeta singleton
+                const docId = "siteMeta";
+
+                // Build contact object
+                const contactData = {
+                    contact: {
+                        address: data.address || "",
+                        hotline: data.hotline || "",
+                        email: data.email || "",
+                    },
+                    social: [
+                        { label: "Facebook", href: data.facebook || "" },
+                        { label: "Instagram", href: data.instagram || "" },
+                        { label: "LinkedIn", href: data.linkedin || "" },
+                        { label: "YouTube", href: data.youtube || "" },
+                        { label: "WhatsApp", href: data.whatsapp || "" },
+                        { label: "TikTok", href: data.tiktok || "" },
+                    ],
+                };
+
+                const { setDoc } = await import("firebase/firestore");
+                await setDoc(doc(db, "siteMeta", docId), contactData, { merge: true });
             } else {
                 if (activeTab === "newsEvents") {
                     data.coverImage = uploadedCoverImage;
@@ -120,7 +144,7 @@ const ManageContent = () => {
             />
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-900">Manage Content</h1>
-                {activeTab !== "stats" && (
+                {activeTab !== "stats" && activeTab !== "contactInfo" && (
                     <button
                         onClick={() => handleEdit({})}
                         className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
@@ -222,6 +246,124 @@ const ManageContent = () => {
                                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90"
                             >
                                 Save Stats
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            ) : activeTab === "contactInfo" ? (
+                <div className="bg-white shadow sm:rounded-lg p-6">
+                    <h2 className="text-xl font-semibold mb-4">Edit Contact Information</h2>
+                    <form onSubmit={handleSave} className="space-y-6">
+                        {/* Contact Information Section */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-medium text-gray-900">Contact Details</h3>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Address</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    defaultValue={content.siteMeta?.contact?.address}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                    placeholder="271/1, Osman Road, Sainthamaruthu 07"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Hotline</label>
+                                <textarea
+                                    name="hotline"
+                                    rows={3}
+                                    defaultValue={content.siteMeta?.contact?.hotline}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                    placeholder="070 300 8684&#10;076 300 8684&#10;072 300 8684"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">Enter each phone number on a new line</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    defaultValue={content.siteMeta?.contact?.email}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                    placeholder="info@gistcampus.com"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Social Media Links Section */}
+                        <div className="space-y-4 border-t pt-6">
+                            <h3 className="text-lg font-medium text-gray-900">Social Media Links</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Facebook URL</label>
+                                    <input
+                                        type="url"
+                                        name="facebook"
+                                        defaultValue={content.siteMeta?.social?.find(s => s.label === "Facebook")?.href}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        placeholder="https://facebook.com/gistcampus"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Instagram URL</label>
+                                    <input
+                                        type="url"
+                                        name="instagram"
+                                        defaultValue={content.siteMeta?.social?.find(s => s.label === "Instagram")?.href}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        placeholder="https://instagram.com/gistcampus"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">LinkedIn URL</label>
+                                    <input
+                                        type="url"
+                                        name="linkedin"
+                                        defaultValue={content.siteMeta?.social?.find(s => s.label === "LinkedIn")?.href}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        placeholder="https://linkedin.com/company/gistcampus"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">YouTube URL</label>
+                                    <input
+                                        type="url"
+                                        name="youtube"
+                                        defaultValue={content.siteMeta?.social?.find(s => s.label === "YouTube")?.href}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        placeholder="https://youtube.com/@gistcampus"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">TikTok URL</label>
+                                    <input
+                                        type="url"
+                                        name="tiktok"
+                                        defaultValue={content.siteMeta?.social?.find(s => s.label === "TikTok")?.href}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        placeholder="https://tiktok.com/@gistcampus"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">WhatsApp Number</label>
+                                    <input
+                                        type="url"
+                                        name="whatsapp"
+                                        defaultValue={content.siteMeta?.social?.find(s => s.label === "WhatsApp")?.href}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        placeholder="https://wa.me/94703008684"
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500">Format: https://wa.me/94XXXXXXXXX</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <button
+                                type="submit"
+                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90"
+                            >
+                                Save Contact Info
                             </button>
                         </div>
                     </form>

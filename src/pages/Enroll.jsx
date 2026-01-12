@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { useContent } from "../context/ContentContext";
 import { submitEnrollment } from "../services/publicActions";
 
+import { FaGraduationCap } from 'react-icons/fa';
+
 // Mirrors the inquiry.nibm.lk flow but adjusted to the custom
 // requirements (renamed labels, removed sponsor fields, etc.)
 const Enroll = ({ initialCourse }) => {
@@ -58,6 +60,9 @@ const Enroll = ({ initialCourse }) => {
   return (
     <section className="max-w-5xl mx-auto px-4 py-20" id="enroll-form">
       <div className="mb-10 text-center">
+        <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-4">
+          <FaGraduationCap className="text-4xl text-primary" />
+        </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Enroll Now</h1>
         <p className="text-gray-600 max-w-3xl mx-auto">
           Complete the form and our enrollment advisors from GIST Campus will contact you with the programme pack.

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
+import { useContent } from "../context/ContentContext";
 import Logo from '../data/Assets/Logo.png';
 
 // Floating header replicates nibm.lk, adds CTA buttons, and anchors to
@@ -8,9 +9,12 @@ import Logo from '../data/Assets/Logo.png';
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isProgrammesOpen, setIsProgrammesOpen] = useState(false);
   const { currentUser, userRole, logout } = useAuth();
+  const { content } = useContent();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const programmesRef = useRef(null);
 
   const navLinks = [
     { label: "About", href: "/#about" },
@@ -35,11 +39,14 @@ const Header = () => {
     }
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileOpen(false);
+      }
+      if (programmesRef.current && !programmesRef.current.contains(event.target)) {
+        setIsProgrammesOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -71,11 +78,57 @@ const Header = () => {
           </button>
 
           <nav className="hidden xl:flex items-center gap-10 text-sm font-medium text-gray-600">
-            {navLinks.map((link) => (
-              <Link key={link.label} to={link.href} className="hover:text-primary transition-colors">
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              if (link.label === "Programmes") {
+                return (
+                  <div
+                    key={link.label}
+                    className="relative"
+                    onMouseEnter={() => setIsProgrammesOpen(true)}
+                    onMouseLeave={() => setIsProgrammesOpen(false)}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer">
+                      <Link
+                        to={link.href}
+                        className="hover:text-primary transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                      <svg
+                        className={`w-4 h-4 transition-transform ${isProgrammesOpen ? "rotate-180" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+
+                    {isProgrammesOpen && content.programmes && content.programmes.length > 0 && (
+                      <div className="absolute left-0 top-full pt-2">
+                        <div className="w-56 bg-white rounded-xl shadow-lg py-2 border border-gray-100 transition-all duration-200 ease-in-out">
+                          {content.programmes.map((programme) => (
+                            <Link
+                              key={programme.id}
+                              to={`/programmes/${programme.id}`}
+                              onClick={() => setIsProgrammesOpen(false)}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
+                            >
+                              {programme.name || programme.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <Link key={link.label} to={link.href} className="hover:text-primary transition-colors">
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="hidden md:flex items-center gap-3">            <Link

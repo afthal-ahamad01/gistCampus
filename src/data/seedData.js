@@ -7,15 +7,17 @@ export const seedData = {
     organizationName: "GIST Campus",
     tagline: "Powering Great Minds Across Sri Lanka",
     contact: {
-      address: "No: 22, Hill Street, Colombo",
-      hotline: "+94 123 4567",
-      email: "programmes@gistcampus.com",
+      address: "271/1, Osman Road, Sainthamaruthu 07",
+      hotline: "070 300 8684\n076 300 8684\n072 300 8684",
+      email: "info@gistcampus.com",
     },
     social: [
       { label: "Facebook", href: "" },
       { label: "Instagram", href: "" },
       { label: "LinkedIn", href: "" },
       { label: "YouTube", href: "" },
+      { label: "WhatsApp", href: "https://wa.me/94703008684" },
+      { label: "TikTok", href: "" },
     ],
   },
   heroSlides: [

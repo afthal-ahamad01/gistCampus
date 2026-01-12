@@ -9,7 +9,7 @@ const About = () => {
   return (
     <section id="about" className="max-w-6xl mx-auto px-4 space-y-12">
       <div className="text-center space-y-4">
-        <p className="text-xs uppercase tracking-[0.5em] text-primary font-semibold">GIST Since 1968</p>
+        <p className="text-xs uppercase tracking-[0.5em] text-primary font-semibold">GIST Since 2001</p>
         <h2 className="text-4xl font-bold text-gray-900">Empowering thousands to carve better futures</h2>
         <p className="text-gray-600 max-w-3xl mx-auto">
           GIST Campus is the premier Business School in Sri Lanka. We keep abreast of
@@ -21,13 +21,13 @@ const About = () => {
         <article className="p-8 rounded-3xl bg-white shadow-floating">
           <h3 className="text-2xl font-semibold text-gray-900">Our Vision</h3>
           <p className="text-gray-600 italic mt-4">
-            “To become an organization dedicated to produce thinkers capable of transforming their own lives and lives of others”
+            “To be a leading private university in South Asia, setting benchmarks in transformative education that empowers individuals and communities. Through innovative programs, technology-driven learning, and inspiring teaching, we aim to make education engaging, accessible, and meaningful - enabling learners of all backgrounds to achieve excellence and shape a better future.”
           </p>
         </article>
         <article className="p-8 rounded-3xl bg-white shadow-floating">
           <h3 className="text-2xl font-semibold text-gray-900">Our Mission</h3>
           <p className="text-gray-600 italic mt-4">
-            “Creating a learning environment for fostering innovation through experiential learning to produce highly influential lifelong learners”
+            “To develop ethical, socially responsible, and market-ready graduates through innovation, research, skill development, and academic excellence - empowering them to contribute meaningfully at national and global levels.”
           </p>
         </article>
       </div>
@@ -49,9 +49,9 @@ const About = () => {
 
       <div id="contact" className="bg-white rounded-3xl shadow-floating p-8 space-y-2">
         <h3 className="text-xl font-semibold text-gray-900">Contact GIST Campus</h3>
-        <p className="text-gray-600">{siteMeta.contact.address}</p>
-        <p className="text-gray-600">Hotline: {siteMeta.contact.hotline}</p>
-        <p className="text-gray-600">Email: {siteMeta.contact.email}</p>
+        <p className="text-gray-600">{siteMeta?.contact?.address}</p>
+        <p className="text-gray-600">Hotline: {siteMeta?.contact?.hotline}</p>
+        <p className="text-gray-600">Email: {siteMeta?.contact?.email}</p>
       </div>
     </section>
   );

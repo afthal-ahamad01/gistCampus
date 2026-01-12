@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import Enroll from "../Enroll"; // Importing from src/pages/Enroll.jsx
+import { FaGraduationCap } from 'react-icons/fa';
 
 const EnrollPage = () => {
     const location = useLocation();

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useContent } from "../context/ContentContext";
 import { useAuth } from "../context/AuthProvider";
 import Logo from '../data/Assets/Logo.png';
+import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube, FaWhatsapp, FaTiktok } from 'react-icons/fa';
 
 // Footer replicates nibm.lk structure with mandated quick links.
 const Footer = () => {
@@ -27,9 +28,11 @@ const Footer = () => {
             alt="GIST Logo"
             className="h-12 mb-4"
           />
-          <p className="text-sm">{siteMeta.contact.address}</p>
-          <p className="text-sm mt-2">{siteMeta.contact.hotline}</p>
-          <p className="text-sm">{siteMeta.contact.email}</p>
+          <p className="text-sm">{siteMeta?.contact?.address}</p>
+          {siteMeta?.contact?.hotline?.split('\n').map((line, index) => (
+            <p key={index} className="text-sm mt-2">{line}</p>
+          ))}
+          <p className="text-sm">{siteMeta?.contact?.email}</p>
         </div>
         <div>
           <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
@@ -49,7 +52,7 @@ const Footer = () => {
                 {prog.name}
               </Link>
             ))}
-            <Link to="/#programmes" className="block text-primary hover:text-white text-sm mt-2">
+            <Link to="/#programmes" className="block text-blue-400 hover:text-white text-sm mt-2">
               View All
             </Link>
           </nav>
@@ -57,24 +60,38 @@ const Footer = () => {
         <div>
           <h4 className="text-lg font-semibold mb-4 text-white">Follow Us</h4>
           <div className="space-y-2">
-            {siteMeta.social.map((social) => (
-              <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="block hover:text-white">
-                {social.label}
-              </a>
-            ))}
+            {siteMeta?.social?.map((social) => {
+              const Icon = social.label === "Facebook" ? FaFacebook
+                : social.label === "Instagram" ? FaInstagram
+                  : social.label === "LinkedIn" ? FaLinkedin
+                    : social.label === "YouTube" ? FaYoutube
+                      : social.label === "WhatsApp" ? FaWhatsapp
+                        : social.label === "TikTok" ? FaTiktok
+                          : null;
+              return (
+                <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white group">
+                  {Icon && <Icon className="text-lg group-hover:scale-110 transition-transform" />}
+                  <span>{social.label}</span>
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-800 py-6 text-center text-sm text-gray-500">
-        <p>© GIST 2025. All rights reserved.</p>
-        <a href="" target="_blank" rel="noreferrer" className="text-white underline mt-2 inline-block">
-          Privacy Policy
-        </a>
-        {userRole === "admin" && (
-          <Link to="/admin" className="text-white underline mt-2 ml-4 inline-block">
-            Admin Panel
-          </Link>
-        )}
+      <div className="bg-gray-800/50 border-t border-gray-800 py-6 text-center text-sm text-gray-400">
+        <div className="max-w-6xl mx-auto px-4">
+          <p>© GIST 2025. All rights reserved.</p>
+          <div className="flex justify-center gap-4 mt-2">
+            <a href="" target="_blank" rel="noreferrer" className="hover:text-white underline">
+              Privacy Policy
+            </a>
+            {userRole === "admin" && (
+              <Link to="/admin" className="hover:text-white underline">
+                Admin Panel
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
     </footer>
   );
