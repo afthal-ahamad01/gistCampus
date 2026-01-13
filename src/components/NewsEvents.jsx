@@ -6,7 +6,7 @@ const NewsEvents = () => {
   const { content } = useContent();
 
   return (
-    <section id="news" className="bg-gray-50 py-16">
+    <section id="news" className="bg-gray-50 py-16 scroll-mt-20">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
           <p className="text-sm uppercase text-primary tracking-[0.5em] font-semibold">News & Events</p>

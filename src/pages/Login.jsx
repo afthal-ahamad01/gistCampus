@@ -90,7 +90,7 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="form-input w-full"
             required
-            placeholder="user@nibm.lk"
+            placeholder="user@gmail.com"
           />
         </div>
 

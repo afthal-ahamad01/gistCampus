@@ -22,7 +22,7 @@ const Programmes = () => {
     const { content } = useContent();
 
     return (
-        <section id="programmes" className="max-w-6xl mx-auto px-4 py-12">
+        <section id="programmes" className="max-w-6xl mx-auto px-4 py-12 scroll-mt-20">
             <div className="text-center mb-10">
                 <p className="text-sm uppercase text-primary tracking-[0.5em] font-semibold">Study Options</p>
                 <h2 className="text-3xl font-bold text-gray-900 mt-3">Find the right programme for you</h2>

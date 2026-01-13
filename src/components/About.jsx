@@ -7,7 +7,7 @@ const About = () => {
   } = useContent();
 
   return (
-    <section id="about" className="max-w-6xl mx-auto px-4 space-y-12">
+    <section id="about" className="max-w-6xl mx-auto px-4 space-y-12 scroll-mt-20">
       <div className="text-center space-y-4">
         <p className="text-xs uppercase tracking-[0.5em] text-primary font-semibold">GIST Since 2001</p>
         <h2 className="text-4xl font-bold text-gray-900">Empowering thousands to carve better futures</h2>
@@ -47,7 +47,7 @@ const About = () => {
         <StatCard label="Lecturers" value={stats.lecturers} />
       </div>
 
-      <div id="contact" className="bg-white rounded-3xl shadow-floating p-8 space-y-2">
+      <div id="contact" className="bg-white rounded-3xl shadow-floating p-8 space-y-2 scroll-mt-20">
         <h3 className="text-xl font-semibold text-gray-900">Contact GIST Campus</h3>
         <p className="text-gray-600">{siteMeta?.contact?.address}</p>
         <p className="text-gray-600">Hotline: {siteMeta?.contact?.hotline}</p>

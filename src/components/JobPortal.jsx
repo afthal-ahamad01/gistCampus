@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import Logo from "../data/Assets/Logo.png";
+import Hero1 from "../data/Assets/hero2.webp";
 
 // Job portal CTA replicates "My Job with NIBM" from the original site.
 const JobPortal = () => {
@@ -6,14 +8,14 @@ const JobPortal = () => {
     <section className="max-w-6xl mx-auto px-4">
       <div className="bg-white rounded-3xl shadow-floating overflow-hidden grid md:grid-cols-2">
         <img
-          src="https://d1lmq142maiv1z.cloudfront.net/medium_310_A0587_d90970ee93.jpg"
+          src={Hero1}
           alt="Job Portal"
           className="h-72 md:h-full w-full object-cover"
         />
         <div className="p-8 space-y-4">
           <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC_PuEt5JVTl1hAcHd4XJruoZ2DUuMCbL4bQ&s"
-            alt="NIBM Logo"
+            src={Logo}
+            alt="GIST Logo"
             className="h-10"
           />
           <h2 className="text-3xl font-bold text-gray-900">MY JOB with GIST</h2>
