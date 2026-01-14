@@ -25,7 +25,7 @@ const Hero = () => {
                 alt={slide.title}
                 className="h-full w-full object-cover"
                 loading={index === 0 ? "eager" : "lazy"}
-                fetchPriority={index === 0 ? "high" : "auto"}
+                fetchpriority={index === 0 ? "high" : "auto"}
               />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-center px-4">
                 <div className="space-y-4">

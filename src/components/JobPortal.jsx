@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Logo from "../data/Assets/Logo.png";
-import Hero1 from "../data/Assets/hero2.webp";
+import Hero1 from "../data/Assets/hero1.webp";
 
 // Job portal CTA replicates "My Job with NIBM" from the original site.
 const JobPortal = () => {

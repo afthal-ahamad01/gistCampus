@@ -40,6 +40,7 @@ const ManageContent = () => {
         { id: "professionalAffiliations", label: "Professional Affiliations" },
         { id: "stats", label: "Stats" },
         { id: "contactInfo", label: "Contact Info" },
+        { id: "gallery", label: "Gallery (Life at GIST)" },
         { id: "certificates", label: "Issued Certificates" },
     ];
 
@@ -415,18 +416,7 @@ const ManageContent = () => {
                     </h2>
                     <form onSubmit={handleSave} className="space-y-4">
                         {/* Dynamic fields based on tab would be better, but for MVP generic inputs */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                                {activeTab === "programmes" ? "Programme Name" : "Title / Name"}
-                            </label>
-                            <input
-                                type="text"
-                                name={activeTab === "testimonials" || activeTab === "programmes" ? "name" : "title"}
-                                defaultValue={editingItem.title || editingItem.name}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
-                                required
-                            />
-                        </div>
+                        {/* Title input handled conditionally below for gallery/certs */}
 
                         {activeTab === "newsEvents" && (
                             <>
@@ -534,24 +524,59 @@ const ManageContent = () => {
                         )}
 
 
-                        {activeTab !== "programmes" && (
+
+
+                        {activeTab === "gallery" && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Caption</label>
+                                <input
+                                    type="text"
+                                    name="caption"
+                                    defaultValue={editingItem.caption}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                    required
+                                />
+                            </div>
+                        )}
+
+                        {activeTab !== "programmes" && activeTab !== "gallery" && activeTab !== "certificates" && (
                             <>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">
-                                        Description / Role / Caption
+                                        {activeTab === "testimonials" ? "Name" : "Title / Name"}
                                     </label>
-                                    <textarea
-                                        name={activeTab === "testimonials" ? "role" : "description"}
-                                        defaultValue={editingItem.description || editingItem.role}
-                                        rows={3}
+                                    <input
+                                        type="text"
+                                        name={activeTab === "testimonials" ? "name" : "title"}
+                                        defaultValue={editingItem.title || editingItem.name}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        required
                                     />
                                 </div>
+                            </>
+                        )}
+
+
+                        {activeTab !== "programmes" && activeTab !== "certificates" && (
+                            <>
+                                {activeTab !== "gallery" && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            {activeTab === "testimonials" ? "Role" : "Description"}
+                                        </label>
+                                        <textarea
+                                            name={activeTab === "testimonials" ? "role" : "description"}
+                                            defaultValue={editingItem.description || editingItem.role}
+                                            rows={3}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        />
+                                    </div>
+                                )}
 
                                 {activeTab !== "newsEvents" && (
                                     <ImageUpload
                                         label="Image"
-                                        folder={activeTab} // e.g., foreignAffiliations, testimonials
+                                        folder={activeTab} // e.g., foreignAffiliations, testimonials, gallery
                                         initialValue={editingItem.image}
                                         onUpload={(url) => setUploadedImage(url)}
                                     />
@@ -575,9 +600,9 @@ const ManageContent = () => {
                             </button>
                         </div>
                     </form>
-                </div>
+                </div >
             )}
-        </div>
+        </div >
     );
 };
 
