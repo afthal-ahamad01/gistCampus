@@ -10,5 +10,16 @@ export default defineConfig({
     strictPort: true,
     hmr: false,
     allowedHosts: ['.e2b.app', 'localhost', '127.0.0.1']
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+          ui: ['recharts', 'swiper', 'react-icons']
+        }
+      }
+    }
   }
 })

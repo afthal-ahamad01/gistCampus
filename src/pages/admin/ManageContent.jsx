@@ -40,6 +40,7 @@ const ManageContent = () => {
         { id: "professionalAffiliations", label: "Professional Affiliations" },
         { id: "stats", label: "Stats" },
         { id: "contactInfo", label: "Contact Info" },
+        { id: "certificates", label: "Issued Certificates" },
     ];
 
     // Reset upload states when opening modal or changing tabs
@@ -483,6 +484,52 @@ const ManageContent = () => {
                                     defaultValue={editingItem.country}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
                                 />
+                            </div>
+                        )}
+
+                        {activeTab === "certificates" && (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Certificate Number</label>
+                                    <input
+                                        type="text"
+                                        name="certificateNo"
+                                        defaultValue={editingItem.certificateNo}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        required
+                                        placeholder="e.g. GIST-2025-001"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Student Name</label>
+                                    <input
+                                        type="text"
+                                        name="studentName"
+                                        defaultValue={editingItem.studentName}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Programme Name</label>
+                                    <input
+                                        type="text"
+                                        name="programme"
+                                        defaultValue={editingItem.programme}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Completion Year</label>
+                                    <input
+                                        type="number"
+                                        name="year"
+                                        defaultValue={editingItem.year || new Date().getFullYear()}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm form-input"
+                                        required
+                                    />
+                                </div>
                             </div>
                         )}
 

@@ -40,20 +40,42 @@ export const submitEnrollment = async (formData) => {
 };
 
 export const verifyCertificateNumber = async (certificateNo) => {
+  const trimmedNo = certificateNo.trim();
+
+  // 1. Check official Certificates collection
   const certificateQuery = query(
     collection(db, "certificates"),
-    where("certificateNo", "==", certificateNo.trim())
+    where("certificateNo", "==", trimmedNo)
   );
   const snapshot = await getDocs(certificateQuery);
 
-  if (snapshot.empty) {
-    return { exists: false };
+  if (!snapshot.empty) {
+    return {
+      exists: true,
+      ...snapshot.docs[0].data(),
+    };
   }
 
-  return {
-    exists: true,
-    ...snapshot.docs[0].data(),
-  };
+  // 2. Fallback: Check Students collection (for active student records)
+  const studentQuery = query(
+    collection(db, "students"),
+    where("certificateNumber", "==", trimmedNo)
+  );
+  const studentSnapshot = await getDocs(studentQuery);
+
+  if (!studentSnapshot.empty) {
+    const student = studentSnapshot.docs[0].data();
+    return {
+      exists: true,
+      certificateNo: student.certificateNumber,
+      studentName: student.fullName,
+      programme: student.programme,
+      year: student.completionYear || new Date().getFullYear().toString(), // Fallback year
+      source: 'student_record'
+    };
+  }
+
+  return { exists: false };
 };
 
 export const submitTranscriptRequest = async (payload) => {

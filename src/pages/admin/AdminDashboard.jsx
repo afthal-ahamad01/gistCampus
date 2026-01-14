@@ -108,7 +108,7 @@ const AdminDashboard = () => {
                 {/* Faculty Distribution Chart */}
                 <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
                     <h2 className="text-lg md:text-xl font-semibold mb-4">Students by Faculty</h2>
-                    <div className="h-64 md:h-80">
+                    <div className="h-64 md:h-80 min-h-[16rem]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -134,7 +134,7 @@ const AdminDashboard = () => {
                 {/* Enrollment Trends Chart */}
                 <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
                     <h2 className="text-lg md:text-xl font-semibold mb-4">Enrollment Trends (2025)</h2>
-                    <div className="h-64 md:h-80">
+                    <div className="h-64 md:h-80 min-h-[16rem]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 data={stats.enrollmentTrends}

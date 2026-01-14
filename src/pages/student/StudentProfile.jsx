@@ -18,6 +18,10 @@ const StudentProfile = () => {
     const [courseMaterials, setCourseMaterials] = useState({}); // { courseId: [files] }
     const [loadingMaterials, setLoadingMaterials] = useState(false);
 
+    // Transcript State
+    const [transcripts, setTranscripts] = useState([]);
+    const [loadingTranscripts, setLoadingTranscripts] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -40,7 +44,40 @@ const StudentProfile = () => {
         };
 
         fetchStudentData();
+        fetchStudentData();
     }, [currentUser]);
+
+    // Fetch Transcripts when student data is loaded
+    useEffect(() => {
+        const fetchTranscripts = async () => {
+            if (studentData && currentUser?.email) {
+                setLoadingTranscripts(true);
+                try {
+                    // Query by studentEmail (preferred) or studentId
+                    const transcriptsRef = collection(db, "transcripts");
+                    // We check for both email OR studentId matches to be safe, but Firestore OR queries are tricky.
+                    // Let's stick to email as primary secure method, fallback to ID if needed locally?
+                    // Just query by email as it's the most reliable unique identifier we just added.
+                    const q = query(transcriptsRef, where("studentEmail", "==", currentUser.email));
+                    const querySnapshot = await getDocs(q);
+
+                    const fetchedTranscripts = querySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    setTranscripts(fetchedTranscripts);
+                } catch (error) {
+                    console.error("Error fetching transcripts:", error);
+                } finally {
+                    setLoadingTranscripts(false);
+                }
+            }
+        };
+
+        if (studentData) {
+            fetchTranscripts();
+        }
+    }, [studentData, currentUser]);
 
     const handleLogout = async () => {
         await logout();
@@ -234,6 +271,46 @@ const StudentProfile = () => {
                                     </span>
                                 </div>
                                 <Field label="Certificate Number" value={studentData.certificateNumber || "Not Issued"} />
+                            </Section>
+
+                            <Section title="Academic Transcripts">
+                                <div className="col-span-1 sm:col-span-2">
+                                    {loadingTranscripts ? (
+                                        <p className="text-sm text-gray-500">Loading transcripts...</p>
+                                    ) : transcripts.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {transcripts.map((transcript) => (
+                                                <div key={transcript.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-blue-300 transition-colors">
+                                                    <div className="flex items-center space-x-4">
+                                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-semibold text-gray-900">{transcript.fileName || "Academic Transcript"}</h4>
+                                                            <p className="text-xs text-gray-500">
+                                                                Uploaded on {new Date(transcript.uploadedAt).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <a
+                                                        href={transcript.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
+                                                    >
+                                                        Download PDF
+                                                    </a>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                                            <p className="text-sm text-gray-500">No transcripts available yet. <br /> Request one via the "My Results" page.</p>
+                                        </div>
+                                    )}
+                                </div>
                             </Section>
                         </div>
                     )}
