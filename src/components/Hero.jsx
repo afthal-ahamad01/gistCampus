@@ -17,14 +17,15 @@ const Hero = () => {
         loop
         className="h-[50vh] md:h-[85vh]"
       >
-        {content.heroSlides.map((slide) => (
+        {content.heroSlides.map((slide, index) => (
           <SwiperSlide key={slide.id}>
             <div className="relative h-full w-full">
               <img
                 src={slide.image}
                 alt={slide.title}
                 className="h-full w-full object-cover"
-                loading="lazy"
+                loading={index === 0 ? "eager" : "lazy"}
+                fetchPriority={index === 0 ? "high" : "auto"}
               />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-center px-4">
                 <div className="space-y-4">
