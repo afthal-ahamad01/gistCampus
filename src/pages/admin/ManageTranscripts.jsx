@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { db, storage } from "../../config/firebase";
 import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import CustomAlert from "../../components/CustomAlert";
 
 const ManageTranscripts = () => {
     const [transcripts, setTranscripts] = useState([]);
@@ -9,6 +10,13 @@ const ManageTranscripts = () => {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [alertConfig, setAlertConfig] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "success",
+        onConfirm: null
+    });
 
     // Form State
     const [activeRequestId, setActiveRequestId] = useState(null);
@@ -31,7 +39,7 @@ const ManageTranscripts = () => {
             setTranscripts(transcriptsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
             setRequests(requestsSnap.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(req => req.status !== 'completed') // Only show pending
+                .filter(req => req.status !== 'completed' && req.status !== 'rejected')
                 .sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds)
             );
         } catch (error) {
@@ -48,6 +56,39 @@ const ManageTranscripts = () => {
         setStudentEmail(request.email || ""); // Capture email from request
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleReject = async (requestId) => {
+        setAlertConfig({
+            isOpen: true,
+            title: "Reject Request?",
+            message: "Are you sure you want to reject this transcript request? This action cannot be undone.",
+            type: "confirm",
+            onConfirm: async () => {
+                try {
+                    const { updateDoc } = await import("firebase/firestore");
+                    await updateDoc(doc(db, "transcriptRequests", requestId), {
+                        status: 'rejected',
+                        rejectedAt: new Date().toISOString()
+                    });
+                    fetchData();
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Request Rejected",
+                        message: "The transcript request has been successfully rejected.",
+                        type: "success"
+                    });
+                } catch (error) {
+                    console.error("Error rejecting request:", error);
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Error",
+                        message: "Failed to reject the request. Please try again.",
+                        type: "error"
+                    });
+                }
+            }
+        });
     };
 
     const handleUpload = async (e) => {
@@ -89,29 +130,56 @@ const ManageTranscripts = () => {
             e.target.reset();
 
             fetchData();
-            alert("Transcript uploaded successfully!");
+            setAlertConfig({
+                isOpen: true,
+                title: "Transcript Uploaded",
+                message: "The transcript has been uploaded and the student has been notified.",
+                type: "success"
+            });
         } catch (error) {
             console.error("Error uploading transcript:", error);
-            alert(`Failed to upload transcript: ${error.message}`);
+            setAlertConfig({
+                isOpen: true,
+                title: "Upload Failed",
+                message: `Failed to upload transcript: ${error.message}`,
+                type: "error"
+            });
         } finally {
             setUploading(false);
         }
     };
 
     const handleDelete = async (transcript) => {
-        if (window.confirm("Are you sure you want to delete this transcript?")) {
-            try {
-                if (transcript.storagePath) {
-                    const storageRef = ref(storage, transcript.storagePath);
-                    await deleteObject(storageRef);
+        setAlertConfig({
+            isOpen: true,
+            title: "Delete Transcript?",
+            message: "Are you sure you want to permanently delete this transcript?",
+            type: "confirm",
+            onConfirm: async () => {
+                try {
+                    if (transcript.storagePath) {
+                        const storageRef = ref(storage, transcript.storagePath);
+                        await deleteObject(storageRef);
+                    }
+                    await deleteDoc(doc(db, "transcripts", transcript.id));
+                    fetchData();
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Deleted",
+                        message: "Transcript has been deleted successfully.",
+                        type: "success"
+                    });
+                } catch (error) {
+                    console.error("Error deleting transcript:", error);
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Error",
+                        message: "Failed to delete transcript.",
+                        type: "error"
+                    });
                 }
-                await deleteDoc(doc(db, "transcripts", transcript.id));
-                fetchData();
-            } catch (error) {
-                console.error("Error deleting transcript:", error);
-                alert("Failed to delete transcript.");
             }
-        }
+        });
     };
 
     const filteredTranscripts = transcripts.filter(t =>
@@ -196,12 +264,20 @@ const ManageTranscripts = () => {
                                 <p className="text-sm text-gray-600">ID: {req.studentId}</p>
                                 <p className="text-sm text-gray-600">Prog: {req.programmeName}</p>
                                 <p className="text-sm text-gray-500 mt-2 italic">"{req.purpose}"</p>
-                                <button
-                                    onClick={() => handleFulfill(req)}
-                                    className="mt-3 w-full py-2 bg-yellow-100 text-yellow-800 font-medium rounded hover:bg-yellow-200 transition-colors text-sm"
-                                >
-                                    Fulfill Request
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleFulfill(req)}
+                                        className="mt-3 flex-1 py-2 bg-yellow-100 text-yellow-800 font-medium rounded hover:bg-yellow-200 transition-colors text-sm"
+                                    >
+                                        Fulfill
+                                    </button>
+                                    <button
+                                        onClick={() => handleReject(req.id)}
+                                        className="mt-3 flex-1 py-2 bg-red-50 text-red-700 font-medium rounded hover:bg-red-100 transition-colors text-sm"
+                                    >
+                                        Reject
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -257,6 +333,15 @@ const ManageTranscripts = () => {
                     )}
                 </div>
             </div>
+
+            <CustomAlert
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                onConfirm={alertConfig.onConfirm}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
         </div>
     );
 };

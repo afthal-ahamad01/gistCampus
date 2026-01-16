@@ -2,11 +2,19 @@ import { useState } from "react";
 import { useContent } from "../../context/ContentContext";
 import { db } from "../../config/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import CustomAlert from "../../components/CustomAlert";
 
 const ManageProgrammes = () => {
     const { content } = useContent();
     const [editingProgramme, setEditingProgramme] = useState(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "success",
+        onConfirm: null
+    });
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -21,23 +29,49 @@ const ManageProgrammes = () => {
             }
             setIsFormOpen(false);
             setEditingProgramme(null);
-            alert("Programme saved successfully!");
+            setAlertConfig({
+                isOpen: true,
+                title: "Programme Saved",
+                message: "Changes have been updated successfully.",
+                type: "success"
+            });
         } catch (error) {
             console.error("Error saving programme:", error);
-            alert("Failed to save programme.");
+            setAlertConfig({
+                isOpen: true,
+                title: "Error",
+                message: "Could not save the programme. Please check your permissions.",
+                type: "error"
+            });
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this programme?")) {
-            try {
-                await deleteDoc(doc(db, "programmes", id));
-                alert("Programme deleted successfully!");
-            } catch (error) {
-                console.error("Error deleting programme:", error);
-                alert("Failed to delete programme.");
+        setAlertConfig({
+            isOpen: true,
+            title: "Delete Programme?",
+            message: "All courses linked to this programme will lose their category. Proceed?",
+            type: "confirm",
+            onConfirm: async () => {
+                try {
+                    await deleteDoc(doc(db, "programmes", id));
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Deleted",
+                        message: "Programme removed successfully.",
+                        type: "success"
+                    });
+                } catch (error) {
+                    console.error("Error deleting programme:", error);
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Error",
+                        message: "Failed to delete programme.",
+                        type: "error"
+                    });
+                }
             }
-        }
+        });
     };
 
     return (
@@ -135,6 +169,15 @@ const ManageProgrammes = () => {
                     </form>
                 </div>
             )}
+
+            <CustomAlert
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                onConfirm={alertConfig.onConfirm}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
         </div>
     );
 };

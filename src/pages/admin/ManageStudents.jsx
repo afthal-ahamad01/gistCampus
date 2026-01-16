@@ -6,6 +6,7 @@ import { useContent } from "../../context/ContentContext";
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import ImageUpload from "../../components/admin/ImageUpload";
+import CustomAlert from "../../components/CustomAlert";
 
 const ManageStudents = () => {
     const { currentUser } = useAuth();
@@ -22,6 +23,13 @@ const ManageStudents = () => {
 
     // Photo Upload State
     const [photoUrl, setPhotoUrl] = useState("");
+    const [alertConfig, setAlertConfig] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "success",
+        onConfirm: null
+    });
 
     useEffect(() => {
         fetchStudents();
@@ -57,7 +65,12 @@ const ManageStudents = () => {
 
         // Check if already enrolled
         if (enrolledCourses.some(c => c.courseId === course.id)) {
-            alert("Student is already enrolled in this course.");
+            setAlertConfig({
+                isOpen: true,
+                title: "Already Enrolled",
+                message: "This student is already enrolled in this course.",
+                type: "error"
+            });
             return;
         }
 
@@ -115,11 +128,21 @@ const ManageStudents = () => {
                     } catch (authError) {
                         await deleteApp(secondaryApp); // Cleanup on error too
                         console.error("Auth Error:", authError);
-                        alert(`Failed to create login account: ${authError.message}`);
+                        setAlertConfig({
+                            isOpen: true,
+                            title: "Auth Error",
+                            message: `Failed to create login account: ${authError.message}`,
+                            type: "error"
+                        });
                         return; // Stop if auth fails
                     }
                 } else {
-                    alert("Temporary Password is required for new students.");
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Password Required",
+                        message: "Temporary Password is required for new students.",
+                        type: "error"
+                    });
                     return;
                 }
 
@@ -141,22 +164,50 @@ const ManageStudents = () => {
             setIsFormOpen(false);
             setEditingStudent(null);
             fetchStudents();
-            alert("Student saved successfully!");
+            setAlertConfig({
+                isOpen: true,
+                title: "Student Saved",
+                message: "The student profile has been successfully saved.",
+                type: "success"
+            });
         } catch (error) {
             console.error("Error saving student:", error);
-            alert("Failed to save student.");
+            setAlertConfig({
+                isOpen: true,
+                title: "Save Failed",
+                message: `Failed to save student: ${error.message}`,
+                type: "error"
+            });
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this student?")) {
-            try {
-                await deleteDoc(doc(db, "students", id));
-                fetchStudents();
-            } catch (error) {
-                console.error("Error deleting student:", error);
+        setAlertConfig({
+            isOpen: true,
+            title: "Delete Student?",
+            message: "Are you sure you want to delete this student? This action cannot be undone.",
+            type: "confirm",
+            onConfirm: async () => {
+                try {
+                    await deleteDoc(doc(db, "students", id));
+                    fetchStudents();
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Deleted",
+                        message: "Student account has been removed.",
+                        type: "success"
+                    });
+                } catch (error) {
+                    console.error("Error deleting student:", error);
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Error",
+                        message: "Failed to delete student.",
+                        type: "error"
+                    });
+                }
             }
-        }
+        });
     };
 
     // Filtered lists for dropdowns
@@ -445,6 +496,15 @@ const ManageStudents = () => {
                     </form>
                 </div>
             )}
+
+            <CustomAlert
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                onConfirm={alertConfig.onConfirm}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
         </div>
     );
 };

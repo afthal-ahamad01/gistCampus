@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useContent } from "../context/ContentContext";
 import { submitEnrollment } from "../services/publicActions";
+import CustomAlert from "../components/CustomAlert";
 
 import { FaGraduationCap } from 'react-icons/fa';
 
@@ -12,6 +13,12 @@ const Enroll = ({ initialCourse }) => {
   const { content } = useContent();
   const [submissionState, setSubmissionState] = useState({ status: "idle", message: "" });
   const [selectedProgramId, setSelectedProgramId] = useState("");
+  const [alertConfig, setAlertConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success"
+  });
 
   const {
     register,
@@ -41,18 +48,23 @@ const Enroll = ({ initialCourse }) => {
     try {
       setSubmissionState({ status: "loading" });
       await submitEnrollment(values);
-      setSubmissionState({
-        status: "success",
-        message:
-          "Thank you for applying! Your submission was successful. Our administration team will reach out to you soon. Kindly verify that your contact information is correct.",
+      setSubmissionState({ status: "success" });
+      setAlertConfig({
+        isOpen: true,
+        title: "Application Received!",
+        message: "Thank you for applying. Our administration team will review your application and contact you soon.",
+        type: "success"
       });
       reset();
       setSelectedProgramId(""); // Reset filter
     } catch (error) {
       console.error(error);
-      setSubmissionState({
-        status: "error",
-        message: "We could not submit your enrollment at this time. Please try again shortly.",
+      setSubmissionState({ status: "error" });
+      setAlertConfig({
+        isOpen: true,
+        title: "Submission Error",
+        message: "We encountered a problem while submitting your enrollment. Please try again or contact support.",
+        type: "error"
       });
     }
   };
@@ -274,6 +286,14 @@ const Enroll = ({ initialCourse }) => {
         </Link>
         .
       </p>
+
+      <CustomAlert
+        isOpen={alertConfig.isOpen}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+      />
     </section>
   );
 };

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { verifyCertificateNumber, submitTranscriptRequest } from "../services/publicActions";
 import { useContent } from "../context/ContentContext";
+import CustomAlert from "../components/CustomAlert";
 
 // Handles certificate verification + transcript requests with Firebase
 // writes, mirroring the immediate feedback requirements.
@@ -24,6 +25,13 @@ const MyResults = () => {
     reset: resetTranscript,
     formState: { errors: errorsTranscript },
   } = useForm();
+
+  const [alertConfig, setAlertConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success"
+  });
 
   const selectedProgrammeName = watch("programmeName");
 
@@ -79,17 +87,22 @@ const MyResults = () => {
     try {
       setTranscriptState({ status: "loading" });
       await submitTranscriptRequest(values);
-      setTranscriptState({
-        status: "success",
-        message: "Your request has been submitted successfully. The administration will contact you shortly.",
+      setTranscriptState({ status: "success" });
+      setAlertConfig({
+        isOpen: true,
+        title: "Request Submitted!",
+        message: "Your transcript request has been sent to the administration. We will contact you once it's ready.",
+        type: "success"
       });
-      alert("Request sent successfully!");
       resetTranscript();
     } catch (error) {
       console.error(error);
-      setTranscriptState({
-        status: "error",
-        message: "Unable to submit your request at this time. Please try again shortly.",
+      setTranscriptState({ status: "error" });
+      setAlertConfig({
+        isOpen: true,
+        title: "Submission Failed",
+        message: "We're sorry, but we couldn't process your request. Please check your connection and try again.",
+        type: "error"
       });
     }
   };
@@ -237,16 +250,21 @@ const MyResults = () => {
           >
             {transcriptState.status === "loading" ? "Submitting..." : "Confirm"}
           </button>
-          {transcriptState.message && (
-            <p
-              className={`text-center font-medium ${transcriptState.status === "error" ? "text-red-500" : "text-green-600"
-                }`}
-            >
-              {transcriptState.message}
+          {transcriptState.status === "error" && (
+            <p className="text-center font-medium text-red-500">
+              Unable to submit your request at this time.
             </p>
           )}
         </form>
       </article>
+
+      <CustomAlert
+        isOpen={alertConfig.isOpen}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+      />
     </section>
   );
 };
