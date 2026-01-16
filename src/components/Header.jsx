@@ -167,7 +167,7 @@ const Header = () => {
 
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg py-2 border border-gray-100 animate-fade-in">
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg py-2 border border-gray-100 animate-fade-in">
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-semibold text-gray-900 truncate">
                         {currentUser.displayName || "User"}
@@ -181,7 +181,7 @@ const Header = () => {
                       onClick={() => setIsProfileOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      My Profile
+                      {userRole === "admin" ? "Admin Panel" : "My Profile"}
                     </Link>
 
                     {userRole === "student" && (
@@ -267,7 +267,7 @@ const Header = () => {
                     onClick={() => setIsNavOpen(false)}
                     className="block w-full text-center px-4 py-3 rounded-full border border-gray-200 text-gray-700 font-semibold"
                   >
-                    My Profile
+                    {userRole === "admin" ? "Admin Panel" : "My Profile"}
                   </Link>
                   <button
                     onClick={handleLogout}

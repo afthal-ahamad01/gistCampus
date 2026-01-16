@@ -107,11 +107,6 @@ const Footer = () => {
             <Link to="/privacy-policy" className="hover:text-white underline">
               Privacy Policy
             </Link>
-            {userRole === "admin" && (
-              <Link to="/admin" className="hover:text-white underline">
-                Admin Panel
-              </Link>
-            )}
           </div>
         </div>
       </div>
