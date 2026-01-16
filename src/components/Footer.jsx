@@ -14,7 +14,7 @@ const Footer = () => {
 
   const quickLinks = [
     { label: "News & Events", href: "/#news" },
-    { label: "Consultancy", href: "/#consultancy" },
+    { label: "Consultancy", href: "tel:0703008684" },
     { label: "My Results", href: "/results" },
     { label: "Gallery", href: "/#gallery" },
   ];
@@ -59,11 +59,18 @@ const Footer = () => {
         <div>
           <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
           <nav className="space-y-2">
-            {quickLinks.map((link) => (
-              <Link key={link.label} to={link.href} className="block hover:text-white">
-                {link.label}
-              </Link>
-            ))}
+            {quickLinks.map((link) => {
+              const isExternal = link.href.startsWith("tel:") || link.href.startsWith("mailto:") || link.href.startsWith("http");
+              return isExternal ? (
+                <a key={link.label} href={link.href} className="block hover:text-white">
+                  {link.label}
+                </a>
+              ) : (
+                <Link key={link.label} to={link.href} className="block hover:text-white">
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div>
