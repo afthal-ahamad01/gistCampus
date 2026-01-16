@@ -44,6 +44,8 @@ const EnrollPage = lazy(() => import("./pages/public/EnrollPage"));
 const NewsEventsPage = lazy(() => import("./pages/public/NewsEventsPage"));
 const NewsEventDetail = lazy(() => import("./pages/public/NewsEventDetail"));
 const ProgrammeDetail = lazy(() => import("./pages/public/ProgrammeDetail"));
+const PrivacyPolicy = lazy(() => import("./pages/public/PrivacyPolicy"));
+const CookiePolicy = lazy(() => import("./pages/public/CookiePolicy"));
 
 const App = () => {
   return (
@@ -64,6 +66,8 @@ const App = () => {
                 <Route path="news-events/:id" element={<NewsEventDetail />} />
                 <Route path="/results" element={<MyResults />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/cookie-policy" element={<CookiePolicy />} />
               </Route>
 
               {/* Protected Routes */}

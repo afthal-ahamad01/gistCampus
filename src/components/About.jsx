@@ -1,4 +1,5 @@
 import { useContent } from "../context/ContentContext";
+import { FaUniversity, FaUsers, FaChalkboardTeacher } from 'react-icons/fa';
 
 // About section mirrors nibm.lk copy including vision, mission, OBL.
 const About = () => {
@@ -42,25 +43,52 @@ const About = () => {
       </article>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard label="Campuses" value={stats.campuses} />
-        <StatCard label="Students" value={`${stats.students.toLocaleString()}+`} />
-        <StatCard label="Lecturers" value={stats.lecturers} />
+        <StatCard label="Campuses" value={stats.campuses} Icon={FaUniversity} />
+        <StatCard label="Students" value={`${stats.students.toLocaleString()}+`} Icon={FaUsers} />
+        <StatCard label="Lecturers" value={stats.lecturers} Icon={FaChalkboardTeacher} />
       </div>
 
-      <div id="contact" className="bg-white rounded-3xl shadow-floating p-8 space-y-2 scroll-mt-20">
-        <h3 className="text-xl font-semibold text-gray-900">Contact GIST Campus</h3>
-        <p className="text-gray-600">{siteMeta?.contact?.address}</p>
-        <p className="text-gray-600">Hotline: {siteMeta?.contact?.hotline}</p>
-        <p className="text-gray-600">Email: {siteMeta?.contact?.email}</p>
+      <div id="contact" className="bg-white rounded-3xl shadow-floating p-8 space-y-3 scroll-mt-20">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">Contact GIST Campus</h3>
+        <p className="text-gray-600 flex items-start gap-4 pb-3 border-b border-gray-100">
+          <span className="font-semibold w-24 shrink-0">Address:</span>
+          <span>{siteMeta?.contact?.address}</span>
+        </p>
+        <div className="text-gray-600 flex items-start gap-4 pb-3 border-b border-gray-100 uppercase">
+          <span className="font-semibold w-24 shrink-0">Hotline:</span>
+          <div className="flex flex-col gap-2">
+            {siteMeta?.contact?.hotline?.split('\n').filter(Boolean).map((line, index) => (
+              <a
+                key={index}
+                href={`tel:${line.replace(/\s+/g, '')}`}
+                className="hover:text-primary transition-colors font-medium"
+              >
+                {line}
+              </a>
+            ))}
+          </div>
+        </div>
+        <p className="text-gray-600 flex items-start gap-4 uppercase border-b border-gray-100 pb-3">
+          <span className="font-semibold w-24 shrink-0">Email:</span>
+          <a
+            href={`mailto:${siteMeta?.contact?.email}`}
+            className="hover:text-primary transition-colors font-medium lowercase"
+          >
+            {siteMeta?.contact?.email}
+          </a>
+        </p>
       </div>
     </section>
   );
 };
 
-const StatCard = ({ label, value }) => (
-  <div className="p-6 rounded-2xl bg-primary text-white text-center">
-    <p className="text-3xl font-bold">{value}</p>
-    <p className="text-sm uppercase tracking-widest text-white/70 mt-1">{label}</p>
+const StatCard = ({ label, value, Icon }) => (
+  <div className="p-6 rounded-2xl bg-primary text-white flex flex-col items-center justify-center space-y-2">
+    <div className="flex items-center gap-4">
+      {Icon && <Icon className="w-10 h-10 text-white/70 shrink-0" />}
+      <p className="text-3xl md:text-4xl font-bold leading-none">{value}</p>
+    </div>
+    <p className="text-sm uppercase tracking-widest text-white/70 mt-1 text-center font-medium">{label}</p>
   </div>
 );
 

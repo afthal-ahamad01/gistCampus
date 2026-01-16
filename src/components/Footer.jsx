@@ -28,11 +28,33 @@ const Footer = () => {
             alt="GIST Logo"
             className="h-12 mb-4"
           />
-          <p className="text-sm">{siteMeta?.contact?.address}</p>
-          {siteMeta?.contact?.hotline?.split('\n').map((line, index) => (
-            <p key={index} className="text-sm mt-2">{line}</p>
-          ))}
-          <p className="text-sm">{siteMeta?.contact?.email}</p>
+          <div className="text-sm border-b border-gray-800 pb-2 mb-2">
+            {siteMeta?.contact?.address?.includes(',') ? (
+              <>
+                <p>{siteMeta.contact.address.substring(0, siteMeta.contact.address.lastIndexOf(',')).trim()}</p>
+                <p>{siteMeta.contact.address.substring(siteMeta.contact.address.lastIndexOf(',') + 1).trim()}</p>
+              </>
+            ) : (
+              <p>{siteMeta?.contact?.address}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            {siteMeta?.contact?.hotline?.split('\n').filter(Boolean).map((line, index) => (
+              <a
+                key={index}
+                href={`tel:${line.replace(/\s+/g, '')}`}
+                className="block text-sm hover:text-white transition-colors"
+              >
+                {line}
+              </a>
+            ))}
+            <a
+              href={`mailto:${siteMeta?.contact?.email}`}
+              className="block text-sm hover:text-white transition-colors"
+            >
+              {siteMeta?.contact?.email}
+            </a>
+          </div>
         </div>
         <div>
           <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
@@ -82,9 +104,9 @@ const Footer = () => {
         <div className="max-w-6xl mx-auto px-4">
           <p>© GIST 2025. All rights reserved.</p>
           <div className="flex justify-center gap-4 mt-2">
-            <a href="" target="_blank" rel="noreferrer" className="hover:text-white underline">
+            <Link to="/privacy-policy" className="hover:text-white underline">
               Privacy Policy
-            </a>
+            </Link>
             {userRole === "admin" && (
               <Link to="/admin" className="hover:text-white underline">
                 Admin Panel

@@ -268,7 +268,7 @@ const Enroll = ({ initialCourse }) => {
         )}
       </form>
       <p className="text-center text-sm text-gray-500 mt-6">
-        Need help? Call us via hotline 070 300 8684 or{" "}
+        Need help? Call us via hotline <a href="tel:0703008684" className="hover:text-primary transition-colors font-semibold text-gray-700">070 300 8684</a> or{" "}
         <Link to="/#contact" className="text-primary font-semibold">
           view campus contacts
         </Link>

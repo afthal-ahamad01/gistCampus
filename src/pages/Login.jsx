@@ -91,6 +91,7 @@ const Login = () => {
             className="form-input w-full"
             required
             placeholder="user@gmail.com"
+
           />
         </div>
 
